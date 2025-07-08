@@ -3,6 +3,9 @@ import path from "path";
 import ApiRoute from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { NotFound } from "./Errors";
+import dotenv from "dotenv";
+dotenv.config();
+
 const app = express();
 
 app.use(express.json({ limit: "2mb" }));

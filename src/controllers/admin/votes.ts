@@ -3,7 +3,7 @@ import { db } from "../../models/db";
 import { votes, votesItems } from "../../models/schema";
 import { SuccessResponse } from "../../utils/response";
 import { v4 as uuidv4 } from "uuid";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { NotFound } from "../../Errors";
 
 export const getAllVotes = async (req: Request, res: Response) => {
@@ -99,47 +99,69 @@ export const deleteVote = async (req: Request, res: Response) => {
   });
   SuccessResponse(res, { message: "vote deleted successfully" }, 200);
 };
-/*
-import { db } from "@/db";
-import { votes, voteItems } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import { Request, Response } from "express";
 
-export const updateVoteWithOptions = async (req: Request, res: Response) => {
-  const voteId = req.params.id;
-  const { title, description, options } = req.body;
+export const getAllOptions = async (req: Request, res: Response) => {
+  const { voteId } = req.params;
+  const options = await db
+    .select()
+    .from(votesItems)
+    .where(eq(votesItems.voteId, voteId));
 
+  if (!options.length) {
+    throw new NotFound("No options found for this vote");
+  }
+
+  SuccessResponse(res, { options }, 200);
+};
+
+export const updateOptions = async (req: Request, res: Response) => {
+  const { voteId } = req.params;
+  const { items } = req.body;
+  const [vote] = await db.select().from(votes).where(eq(votes.id, voteId));
+  if (!vote) {
+    throw new NotFound("vote not found");
+  }
   await db.transaction(async (tx) => {
-    // 1. Update the vote
-    await tx.update(votes)
-      .set({ title, description })
-      .where(eq(votes.id, voteId));
+    for (const item of items) {
+      const hasId = !!item.id;
+      const hasValue = "value" in item;
 
-    // 2. Handle each option
-    for (const option of options) {
-      if (option._delete && option.id) {
-        // Delete vote item
-        await tx.delete(voteItems).where(eq(voteItems.id, option.id));
-      } else if (option.id) {
-        // Update existing vote item
-        await tx.update(voteItems)
-          .set({ label: option.label })
-          .where(eq(voteItems.id, option.id));
-      } else {
-        // Insert new vote item
-        await tx.insert(voteItems).values({
-          label: option.label,
-          voteId: voteId,
-        });
+      if (hasId && hasValue) {
+        // Update existing item
+        await tx
+          .update(votesItems)
+          .set({ item: item.value })
+          .where(eq(votesItems.id, item.id));
+      } else if (!hasId && hasValue) {
+        // Insert new item
+        await tx
+          .insert(votesItems)
+          .values({ id: uuidv4(), voteId, item: item.value });
+      } else if (hasId && !hasValue) {
+        // Delete item
+        await tx.delete(votesItems).where(eq(votesItems.id, item.id));
       }
     }
   });
 
-  res.status(200).json({ message: "Vote and options updated successfully." });
+  res.json({ message: "Vote items processed" });
 };
 
- */
+export const getOption = async (req: Request, res: Response) => {
+  const { itemId } = req.params;
+  const option = await db.query.votesItems.findFirst({
+    where: eq(votesItems.id, itemId),
+  });
+  if (!option) throw new NotFound("Option not found");
+  SuccessResponse(res, { option }, 200);
+};
 
-export const getOptions = async (req: Request, res: Response) => {};
-export const createOption = async (req: Request, res: Response) => {};
-export const deleteOption = async (req: Request, res: Response) => {};
+export const deleteOption = async (req: Request, res: Response) => {
+  const { itemId } = req.params;
+  const option = await db.query.votesItems.findFirst({
+    where: eq(votesItems.id, itemId),
+  });
+  if (!option) throw new NotFound("Option not found");
+  await db.delete(votesItems).where(eq(votesItems.id, itemId));
+  SuccessResponse(res, { message: "option deleted" }, 200);
+};

@@ -19,3 +19,18 @@ export const updateVoteSchema = z.object({
     maxSelections: z.number().min(1).optional(),
   }),
 });
+
+export const flexibleVoteItemsSchema = z.object({
+  body: z.object({
+    items: z.array(
+      z
+        .object({
+          id: z.string().uuid().optional(),
+          value: z.string().min(1).optional(),
+        })
+        .refine((item) => item.id || item.value, {
+          message: "Each item must have at least 'id' or 'value'",
+        })
+    ),
+  }),
+});

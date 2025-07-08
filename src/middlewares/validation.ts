@@ -43,7 +43,6 @@ export const validate = (
             : Promise.resolve()
         );
         await Promise.all(deleteOps);
-        console.error("Validation error details:", error.errors);
         throw error;
       }
       next(error);

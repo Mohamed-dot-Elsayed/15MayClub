@@ -37,8 +37,17 @@ export const users = mysqlTable("users", {
   imagePath: text("image_path"),
   dateOfBirth: date("date_of_birth").notNull(),
   status: mysqlEnum(userStatusEnum).default("pending").notNull(),
+  fcmtoken: varchar("fcmtoken", { length: 255 }),
+  isVerified: boolean("is_verified").default(false),
+  rejectionReason: text("rejection_reason"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow().onUpdateNow(),
+});
+
+export const emailVerifications = mysqlTable("email_verifications", {
+  userId: varchar("user_id", { length: 36 }).primaryKey(),
+  code: varchar("code", { length: 6 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // VOTES
@@ -120,36 +129,34 @@ export const complaintsCategory = mysqlTable("complaints_category", {
 
 export const complaints = mysqlTable("complaints", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  explain: varchar("explain", { length: 255 }).notNull(),
+  content: varchar("explain", { length: 255 }).notNull(),
   seen: boolean("seen").default(false),
   categoryId: varchar("category_id", { length: 36 })
     .notNull()
     .references(() => complaintsCategory.id),
+  userId: varchar("user_id", { length: 36 })
+    .notNull()
+    .references(() => users.id),
+  date: date("date").notNull(),
+  status: boolean("status").default(false).notNull(),
 });
-
-export const userComplaints = mysqlTable(
-  "user_complaints",
-  {
-    id: varchar("id", { length: 36 }).primaryKey(),
-    userId: varchar("user_id", { length: 36 })
-      .notNull()
-      .references(() => users.id),
-    complaintId: varchar("complaint_id", { length: 36 })
-      .notNull()
-      .references(() => complaints.id),
-  },
-  (table) => [
-    unique("unique_user_complaint").on(table.userId, table.complaintId),
-  ]
-);
 
 // COMPETITIONS
 export const competitions = mysqlTable("competitions", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull(),
+  mainImagepath: text("main_image_path").notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
+});
+
+export const competitionsImages = mysqlTable("competitions_images", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  imagePath: text("image_path").notNull(),
+  competitionId: varchar("competition_id", { length: 36 })
+    .notNull()
+    .references(() => competitions.id),
 });
 
 export const userCompetition = mysqlTable(
@@ -162,7 +169,9 @@ export const userCompetition = mysqlTable(
     competitionId: varchar("competition_id", { length: 36 })
       .notNull()
       .references(() => competitions.id),
-    date: date("date").notNull(),
+    dateOfBirth: date("date_of_birth").notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    gender: mysqlEnum(["male", "female"]).notNull(),
   },
   (table) => [
     unique("unique_user_competition").on(table.userId, table.competitionId),
@@ -191,4 +200,18 @@ export const popUpsPages = mysqlTable("popups_pages", {
   pageId: varchar("page_id", { length: 36 })
     .notNull()
     .references(() => appPages.id),
+});
+
+export const sliders = mysqlTable("sliders", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  status: boolean("status").default(true),
+  order: int("arrange").notNull(),
+});
+
+export const sliderImages = mysqlTable("slider_images", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  slider_id: varchar("slider_id", { length: 36 })
+    .notNull()
+    .references(() => sliders.id),
+  image_path: text("image_path").notNull(),
 });

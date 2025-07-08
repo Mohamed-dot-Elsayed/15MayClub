@@ -1,5 +1,8 @@
 import { authenticated } from "../../middlewares/authenticated";
 import { authorizeRoles } from "../../middlewares/authorized";
+import CompetitionRoute from "./competitions";
+import ComplaintRoute from "./complaints";
+import ComplaintsCategoryRoute from "./complaintsCategory";
 import AuthRoute from "./auth";
 import UsersAdmin from "./users";
 import voteRoute from "./votes";
@@ -9,4 +12,7 @@ route.use("/auth", AuthRoute);
 route.use(authenticated, authorizeRoles("admin"));
 route.use("/users", UsersAdmin);
 route.use("/votes", voteRoute);
+route.use("/complaints/category", ComplaintsCategoryRoute);
+route.use("/complaints", ComplaintRoute);
+route.use("/competitions", CompetitionRoute);
 export default route;

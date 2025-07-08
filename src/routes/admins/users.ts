@@ -6,6 +6,8 @@ import {
   deleteUser,
   approveUser,
   rejectUser,
+  getAllRejectedUsers,
+  getAllPendingUsers,
 } from "../../controllers/admin/users";
 import { catchAsync } from "../../utils/catchAsync";
 import { validate } from "../../middlewares/validation";
@@ -26,4 +28,14 @@ router
 router.put("/:id/approve", catchAsync(approveUser));
 router.put("/:id/reject", catchAsync(rejectUser));
 
+// Rejected User
+router.get("/rejected", catchAsync(getAllRejectedUsers));
+router
+  .route("/rejected/:id")
+  .get(catchAsync(getUser))
+  .put(catchAsync(updateUser))
+  .delete(catchAsync(deleteUser));
+
+// Pending User
+router.get("/Pending", catchAsync(getAllPendingUsers));
 export default router;

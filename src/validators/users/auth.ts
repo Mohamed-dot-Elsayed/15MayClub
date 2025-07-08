@@ -78,3 +78,37 @@ export const loginSchema = z.object({
     password: z.string().min(6),
   }),
 });
+
+export const verifyEmailSchema = z.object({
+  body: z.object({
+    userId: z.string(),
+    code: z.string().length(6, "Verification code must be 6 characters long"),
+  }),
+});
+
+export const sendResetCodeSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email"),
+  }),
+});
+
+export const resetPasswordSchema = z.object({
+  body: z.object({
+    email: z.string().email("Invalid email"),
+    code: z.string().length(6, "Reset code must be 6 characters long"),
+    newPassword: z
+      .string()
+      .refine(
+        (val) =>
+          !val ||
+          (val.length >= 8 &&
+            /[A-Z]/.test(val) &&
+            /[a-z]/.test(val) &&
+            /[0-9]/.test(val)),
+        {
+          message:
+            "New password must be at least 8 characters and include upper, lower, and number",
+        }
+      ),
+  }),
+});

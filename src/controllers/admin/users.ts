@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { SuccessResponse } from "../../utils/response";
 import { NotFound } from "../../Errors";
 import { saveBase64Image } from "../../utils/handleImages";
+import { sendEmail } from "../../utils/sendEmails";
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const allUsers = await db.select().from(users);
@@ -34,6 +35,7 @@ export const updateUser = async (req: Request, res: Response) => {
     }
     const updates: any = {};
     if (newUser.password) updates.hashedPassword = newUser.password;
+    if (newUser.role) updates.role = newUser.role;
     if (newUser.name) updates.name = newUser.name;
     if (newUser.email) updates.email = newUser.email;
     if (newUser.role) updates.role = newUser.role;
@@ -70,8 +72,13 @@ export const approveUser = async (req: Request, res: Response) => {
   if (!user) throw new NotFound("User not found");
   const result = await db
     .update(users)
-    .set({ status: "approved" })
+    .set({ status: "approved", updatedAt: new Date() })
     .where(eq(users.id, id));
+  await sendEmail(
+    user.email,
+    "Your account has been approved",
+    "Congratulations! Your account has been approved by the admin. You can now log in and start using our services."
+  );
   SuccessResponse(res, { message: "User approved successfully" }, 200);
 };
 
@@ -81,7 +88,28 @@ export const rejectUser = async (req: Request, res: Response) => {
   if (!user) throw new NotFound("User not found");
   const result = await db
     .update(users)
-    .set({ status: "rejected" })
+    .set({ status: "rejected", updatedAt: new Date() })
     .where(eq(users.id, id));
+  await sendEmail(
+    user.email,
+    "Your account has been Rejected",
+    "Unfortunately, your account was rejected."
+  );
   SuccessResponse(res, { message: "User rejected successfully" }, 200);
+};
+
+export const getAllRejectedUsers = async (req: Request, res: Response) => {
+  const allRejectedUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.status, "rejected"));
+  SuccessResponse(res, { users: allRejectedUsers }, 200);
+};
+
+export const getAllPendingUsers = async (req: Request, res: Response) => {
+  const allRejectedUsers = await db
+    .select()
+    .from(users)
+    .where(eq(users.status, "pending"));
+  SuccessResponse(res, { users: allRejectedUsers }, 200);
 };

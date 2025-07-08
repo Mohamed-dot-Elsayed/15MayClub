@@ -5,29 +5,41 @@ import {
   createVote,
   deleteVote,
   updateVote,
-  getOptions,
-  createOption,
+  getAllOptions,
+  getOption,
+  updateOptions,
+  deleteOption,
 } from "../../controllers/admin/votes";
 import { validate } from "../../middlewares/validation";
 import { catchAsync } from "../../utils/catchAsync";
 import {
   createFullVoteSchema,
+  flexibleVoteItemsSchema,
   updateVoteSchema,
 } from "../../validators/admin/votes";
 const router = Router();
+
+// Create Vote and get all votes
 router.post("/", validate(createFullVoteSchema), catchAsync(createVote));
 router.get("/", catchAsync(getAllVotes));
+
+// Get All options, Edit and delete option
+router
+  .route("/:voteId/items")
+  .get(catchAsync(getAllOptions))
+  .put(validate(flexibleVoteItemsSchema), catchAsync(updateOptions));
+
+// Get option by id and delete option
+router
+  .route("/items/:itemId")
+  .get(catchAsync(getOption))
+  .delete(catchAsync(deleteOption));
+
+// Get, Edit and delete vote
 router
   .route("/:id")
   .get(catchAsync(getVote))
   .put(validate(updateVoteSchema), catchAsync(updateVote))
   .delete(catchAsync(deleteVote));
-
-router
-  .route("/:voteId/items")
-  .get(catchAsync(getOptions))
-  .post(catchAsync(createOption));
-
-router.delete("/items/:itemId", catchAsync(deleteVote));
 
 export default router;

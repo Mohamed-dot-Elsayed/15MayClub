@@ -15,6 +15,20 @@
       "when": 1751860616051,
       "tag": "0001_legal_captain_flint",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1751965571180,
+      "tag": "0002_even_nekra",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1751972329999,
+      "tag": "0003_true_medusa",
+      "breakpoints": true
     }
   ]
 }

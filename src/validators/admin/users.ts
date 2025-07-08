@@ -62,7 +62,7 @@ export const updateUserSchema = z.object({
         }),
     })
     .superRefine((data, ctx) => {
-      if (!data.imageBase64 || !data.imageBase64.startsWith("data:image/")) {
+      if (data.imageBase64 && !data.imageBase64.startsWith("data:image/")) {
         ctx.addIssue({
           path: ["imageBase64"],
           code: z.ZodIssueCode.custom,
