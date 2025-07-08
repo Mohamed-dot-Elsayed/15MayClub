@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1751860232992,
+      "tag": "0000_abandoned_captain_marvel",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1751860616051,
+      "tag": "0001_legal_captain_flint",
+      "breakpoints": true
+    }
+  ]
+}
