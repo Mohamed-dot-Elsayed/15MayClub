@@ -55,6 +55,8 @@ export const votes = mysqlTable("votes", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   maxSelections: int("max_selections").notNull(),
+  startDate: date("start_date").notNull(),
+  endDate: date("end_date").notNull(),
 });
 
 export const votesItems = mysqlTable("votes_items", {
@@ -125,6 +127,7 @@ export const reacts = mysqlTable(
 export const complaintsCategory = mysqlTable("complaints_category", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  description: text("description").notNull(),
 });
 
 export const complaints = mysqlTable("complaints", {
@@ -186,6 +189,7 @@ export const appPages = mysqlTable("app_pages", {
 
 export const popUpsImages = mysqlTable("popups_images", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  title: varchar("title", { length: 255 }).notNull(),
   imagePath: varchar("image_path", { length: 255 }).notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
@@ -204,6 +208,7 @@ export const popUpsPages = mysqlTable("popups_pages", {
 
 export const sliders = mysqlTable("sliders", {
   id: varchar("id", { length: 36 }).primaryKey(),
+  name: varchar("name", { length: 255 }),
   status: boolean("status").default(true),
   order: int("arrange").notNull(),
 });

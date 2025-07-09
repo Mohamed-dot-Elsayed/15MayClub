@@ -1,0 +1,23 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const authenticated_1 = require("../../middlewares/authenticated");
+const authorized_1 = require("../../middlewares/authorized");
+const competitions_1 = __importDefault(require("./competitions"));
+const complaints_1 = __importDefault(require("./complaints"));
+const complaintsCategory_1 = __importDefault(require("./complaintsCategory"));
+const auth_1 = __importDefault(require("./auth"));
+const users_1 = __importDefault(require("./users"));
+const votes_1 = __importDefault(require("./votes"));
+const express_1 = require("express");
+const route = (0, express_1.Router)();
+route.use("/auth", auth_1.default);
+route.use(authenticated_1.authenticated, (0, authorized_1.authorizeRoles)("admin"));
+route.use("/users", users_1.default);
+route.use("/votes", votes_1.default);
+route.use("/complaints/category", complaintsCategory_1.default);
+route.use("/complaints", complaints_1.default);
+route.use("/competitions", competitions_1.default);
+exports.default = route;

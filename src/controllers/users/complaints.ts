@@ -27,3 +27,13 @@ export const createComplaints = async (req: Request, res: Response) => {
 
   SuccessResponse(res, { message: "Complaint created successfully" }, 201);
 };
+
+export const getComplaintsCategory = async (req: Request, res: Response) => {
+  const categories = await db
+    .select({
+      id: complaintsCategory.id,
+      name: complaintsCategory.name,
+    })
+    .from(complaintsCategory);
+  SuccessResponse(res, { categories }, 200);
+};

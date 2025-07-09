@@ -84,11 +84,16 @@ export const approveUser = async (req: Request, res: Response) => {
 
 export const rejectUser = async (req: Request, res: Response) => {
   const id = req.params.id;
+  const { rejectionReason } = req.body;
   const [user] = await db.select().from(users).where(eq(users.id, id));
   if (!user) throw new NotFound("User not found");
   const result = await db
     .update(users)
-    .set({ status: "rejected", updatedAt: new Date() })
+    .set({
+      status: "rejected",
+      updatedAt: new Date(),
+      rejectionReason: rejectionReason,
+    })
     .where(eq(users.id, id));
   await sendEmail(
     user.email,

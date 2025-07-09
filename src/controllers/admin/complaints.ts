@@ -23,8 +23,10 @@ export const getComplaintsCategory = async (req: Request, res: Response) => {
 };
 
 export const createComplaintsCategory = async (req: Request, res: Response) => {
-  const { name } = req.body;
-  await db.insert(complaintsCategory).values({ id: uuidv4(), name: name });
+  const { name, description } = req.body;
+  await db
+    .insert(complaintsCategory)
+    .values({ id: uuidv4(), name: name, description: description });
   SuccessResponse(res, { message: "Category created successfully" }, 201);
 };
 
@@ -41,15 +43,22 @@ export const deleteComplaintsCategory = async (req: Request, res: Response) => {
 
 export const updateComplaintsCategory = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { name, description } = req.body;
   const [category] = await db
     .select()
     .from(complaintsCategory)
     .where(eq(complaintsCategory.id, id));
   if (!category) throw new NotFound("Category not found");
+  const updates: any = {};
+  if (name) updates.name = name;
+  if (description) updates.description = description;
+  if (updates === undefined || Object.keys(updates).length === 0) {
+    SuccessResponse(res, { message: "No updates provided" }, 200);
+    return;
+  }
   await db
     .update(complaintsCategory)
-    .set({ name })
+    .set(updates)
     .where(eq(complaintsCategory.id, id));
   SuccessResponse(res, { message: "Category updated successfully" }, 200);
 };

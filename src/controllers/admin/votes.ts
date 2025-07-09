@@ -53,13 +53,15 @@ export const getVote = async (req: Request, res: Response) => {
 };
 
 export const createVote = async (req: Request, res: Response) => {
-  const { name, maxSelections, items } = req.body;
+  const { name, maxSelections, items, startDate, endDate } = req.body;
   const voteId = uuidv4();
   await db.transaction(async (tx) => {
     await tx.insert(votes).values({
       id: voteId,
       name,
       maxSelections,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
     });
     if (items.length) {
       items.forEach(async (item: string) => {
@@ -78,10 +80,12 @@ export const updateVote = async (req: Request, res: Response) => {
   const id = req.params.id;
   const vote = await db.query.votes.findFirst({ where: eq(votes.id, id) });
   if (!vote) throw new NotFound("Vote not found");
-  const { name, maxSelections } = req.body;
+  const { name, maxSelections, startDate, endDate } = req.body;
   const updates: any = {};
   if (name) updates.name = name;
   if (maxSelections) updates.maxSelections = maxSelections;
+  if (startDate) updates.startDate = new Date(startDate);
+  if (endDate) updates.endDate = new Date(endDate);
   console.log("updates", updates);
 
   if (updates && Object.keys(updates).length > 0)

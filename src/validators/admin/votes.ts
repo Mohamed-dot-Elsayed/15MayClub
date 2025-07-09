@@ -6,6 +6,8 @@ export const createFullVoteSchema = z
       name: z.string().min(3),
       maxSelections: z.number().min(1),
       items: z.array(z.string().min(1)).min(1),
+      startDate: z.string(),
+      endDate: z.string(),
     }),
   })
   .refine(({ body }) => body.maxSelections <= body.items.length, {
@@ -17,6 +19,8 @@ export const updateVoteSchema = z.object({
   body: z.object({
     name: z.string().min(3).optional(),
     maxSelections: z.number().min(1).optional(),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
   }),
 });
 

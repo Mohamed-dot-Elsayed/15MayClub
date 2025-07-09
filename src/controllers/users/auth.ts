@@ -140,7 +140,8 @@ export async function login(req: Request, res: Response) {
   const token = generateToken({
     id: user.id,
     name: user.name,
-    role: "approved_user",
+    role:
+      user.role === "member" ? "approved_member_user" : "approved_guest_user",
   });
 
   SuccessResponse(res, { message: "login Successful", tokne: token }, 200);
