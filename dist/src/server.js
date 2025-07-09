@@ -12,7 +12,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({ origin: "*" }));
 app.use(express_1.default.json({ limit: "2mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "2mb" }));
 app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "./uploads")));
