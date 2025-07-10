@@ -9,8 +9,8 @@ import {
   getOption,
   updateOptions,
   deleteOption,
-  getVoteResult,
 } from "../../controllers/admin/votes";
+import { voteResult } from "../../controllers/users/votes";
 import { validate } from "../../middlewares/validation";
 import { catchAsync } from "../../utils/catchAsync";
 import {
@@ -37,7 +37,7 @@ router
   .delete(catchAsync(deleteOption));
 
 // Get vote result
-router.get("/:id/result", catchAsync(getVoteResult));
+router.get("/:id/result", catchAsync(voteResult));
 
 // Get, Edit and delete vote
 router

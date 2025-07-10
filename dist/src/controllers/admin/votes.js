@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVoteResult = exports.deleteOption = exports.getOption = exports.updateOptions = exports.getAllOptions = exports.deleteVote = exports.updateVote = exports.createVote = exports.getVote = exports.getAllVotes = void 0;
+exports.deleteOption = exports.getOption = exports.updateOptions = exports.getAllOptions = exports.deleteVote = exports.updateVote = exports.createVote = exports.getVote = exports.getAllVotes = void 0;
 const db_1 = require("../../models/db");
 const schema_1 = require("../../models/schema");
 const response_1 = require("../../utils/response");
@@ -172,5 +172,3 @@ const deleteOption = async (req, res) => {
     (0, response_1.SuccessResponse)(res, { message: "option deleted" }, 200);
 };
 exports.deleteOption = deleteOption;
-const getVoteResult = async (req, res) => { };
-exports.getVoteResult = getVoteResult;

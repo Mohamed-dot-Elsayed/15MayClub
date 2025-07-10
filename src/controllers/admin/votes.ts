@@ -171,5 +171,3 @@ export const deleteOption = async (req: Request, res: Response) => {
   await db.delete(votesItems).where(eq(votesItems.id, itemId));
   SuccessResponse(res, { message: "option deleted" }, 200);
 };
-
-export const getVoteResult = async (req: Request, res: Response) => {};

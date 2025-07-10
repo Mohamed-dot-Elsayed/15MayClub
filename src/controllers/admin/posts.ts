@@ -1,0 +1,150 @@
+import { Request, Response } from "express";
+import { v4 as uuidv4 } from "uuid";
+import { db } from "../../models/db";
+import { posts, postsCategory, postsImages } from "../../models/schema";
+import { SuccessResponse } from "../../utils/response";
+import { eq } from "drizzle-orm";
+import { NotFound } from "../../Errors";
+import { saveBase64Image } from "../../utils/handleImages";
+
+// Categories
+export const createCategory = async (req: Request, res: Response) => {
+  const { name } = req.body;
+  const categoryId = uuidv4();
+
+  await db.insert(postsCategory).values({ id: categoryId, name });
+
+  SuccessResponse(res, { message: "Category created", categoryId }, 201);
+};
+
+export const getAllCategories = async (req: Request, res: Response) => {
+  const Categories = await db.select().from(postsCategory);
+  SuccessResponse(res, { categories: Categories }, 200);
+};
+
+export const getCategory = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const [category] = await db
+    .select()
+    .from(postsCategory)
+    .where(eq(postsCategory.id, id));
+  if (!category) throw new NotFound("Category not found");
+  SuccessResponse(res, { category }, 200);
+};
+
+export const updateCategory = async (req: Request, res: Response) => {
+  const { name } = req.body;
+  const id = req.params.id;
+  const [existingCategory] = await db
+    .select()
+    .from(postsCategory)
+    .where(eq(postsCategory.id, id));
+  if (!existingCategory) throw new NotFound("Category not found");
+
+  await db.update(postsCategory).set({ name }).where(eq(postsCategory.id, id));
+  SuccessResponse(res, { message: "Category updated" }, 200);
+};
+
+export const deleteCategory = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const [existingCategory] = await db
+    .select()
+    .from(postsCategory)
+    .where(eq(postsCategory.id, id));
+  if (!existingCategory) throw new NotFound("Category not found");
+
+  await db.delete(postsCategory).where(eq(postsCategory.id, id));
+  SuccessResponse(res, { message: "Category deleted" }, 200);
+};
+
+// Posts
+export const createPost = async (req: Request, res: Response) => {
+  const { title, categoryId, images } = req.body;
+  const postId = uuidv4();
+
+  await db.insert(posts).values({ id: postId, title, categoryId });
+
+  if (images?.length) {
+    const ide = uuidv4();
+    await db.insert(postsImages).values(
+      images.map((img: string) => ({
+        id: ide,
+        imagePath: saveBase64Image(img, ide),
+        postId,
+      }))
+    );
+  }
+
+  SuccessResponse(res, { message: "Post created", postId }, 201);
+};
+
+export const getAllPosts = async (req: Request, res: Response) => {
+  const data = await db
+    .select()
+    .from(posts)
+    .leftJoin(postsImages, eq(posts.id, postsImages.postId));
+
+  SuccessResponse(res, { posts: data }, 200);
+};
+
+export const getPost = async (req: Request, res: Response) => {
+  const postId = req.params.id;
+  const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+
+  if (!post) throw new NotFound("Post not found");
+  const images = await db
+    .select()
+    .from(postsImages)
+    .where(eq(postsImages.postId, postId));
+  SuccessResponse(res, { post, images }, 200);
+};
+
+export const updatePost = async (req: Request, res: Response) => {
+  const postId = req.params.id;
+  const { title, categoryId, images } = req.body;
+
+  // Check if post exists
+  const [existingPost] = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, postId));
+
+  if (!existingPost) throw new NotFound("Post not found");
+
+  // Update title and category
+  await db.update(posts).set({ title, categoryId }).where(eq(posts.id, postId));
+
+  // If images provided → replace
+  if (images && Array.isArray(images)) {
+    // Delete old images
+    await db.delete(postsImages).where(eq(postsImages.postId, postId));
+
+    // Insert new images
+    const imageValues = images.map((img: string) => {
+      const imageId = uuidv4();
+      return {
+        id: imageId,
+        imagePath: saveBase64Image(img, imageId),
+        postId,
+      };
+    });
+
+    if (imageValues.length > 0) {
+      await db.insert(postsImages).values(imageValues);
+    }
+  }
+
+  SuccessResponse(res, { message: "Post updated" }, 200);
+};
+
+export const deletePost = async (req: Request, res: Response) => {
+  const postId = req.params.id;
+  const [existingPost] = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, postId));
+  if (!existingPost) throw new NotFound("Post not found");
+  await db.delete(postsImages).where(eq(postsImages.postId, postId));
+  await db.delete(posts).where(eq(posts.id, postId));
+  SuccessResponse(res, { message: "Post deleted" }, 200);
+};

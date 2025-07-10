@@ -64,6 +64,7 @@ async function signup(req, res) {
     }
     (0, response_1.SuccessResponse)(res, {
         message: "User Signup successfully get verification code from gmail",
+        userId: userId,
     }, 201);
 }
 const verifyEmail = async (req, res) => {
