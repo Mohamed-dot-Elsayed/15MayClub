@@ -70,12 +70,13 @@ export async function signup(req: Request, res: Response) {
     userId: userId,
     code,
   });
-
-  await sendEmail(
-    data.email,
-    "Email Verification",
-    `Your verification code is ${code}`
-  );
+  if (!req.user) {
+    await sendEmail(
+      data.email,
+      "Email Verification",
+      `Your verification code is ${code}`
+    );
+  }
 
   SuccessResponse(
     res,

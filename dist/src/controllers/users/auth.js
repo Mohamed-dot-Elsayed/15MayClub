@@ -59,7 +59,9 @@ async function signup(req, res) {
         userId: userId,
         code,
     });
-    await (0, sendEmails_1.sendEmail)(data.email, "Email Verification", `Your verification code is ${code}`);
+    if (!req.user) {
+        await (0, sendEmails_1.sendEmail)(data.email, "Email Verification", `Your verification code is ${code}`);
+    }
     (0, response_1.SuccessResponse)(res, {
         message: "User Signup successfully get verification code from gmail",
     }, 201);
