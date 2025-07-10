@@ -28,30 +28,14 @@ export const updateUser = async (req: Request, res: Response) => {
 
   const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
   if (!user) throw new NotFound("User not found");
-
-  if (newUser !== undefined && Object.keys(newUser).length > 0) {
-    if (newUser.password) {
-      newUser.password = await bcrypt.hash(newUser.password, 10);
-    }
-    const updates: any = {};
-    if (newUser.password) updates.hashedPassword = newUser.password;
-    if (newUser.role) updates.role = newUser.role;
-    if (newUser.name) updates.name = newUser.name;
-    if (newUser.email) updates.email = newUser.email;
-    if (newUser.role) updates.role = newUser.role;
-    if (newUser.phoneNumber) updates.phoneNumber = newUser.phoneNumber;
-    if (newUser.dateOfBirth)
-      updates.dateOfBirth = new Date(newUser.dateOfBirth);
-    if (newUser.imageBase64)
-      updates.image_path = saveBase64Image(newUser.imageBase64, user.id);
-    console.log("Updates:", updates);
-
-    if (updates === undefined || Object.keys(updates).length === 0) {
-      SuccessResponse(res, { message: "User Updated successfully" }, 200);
-      return;
-    }
-    const result = await db.update(users).set(updates).where(eq(users.id, id));
+  if (newUser.password) {
+    newUser.hashedPassword = await bcrypt.hash(newUser.password, 10);
+    delete newUser.password;
   }
+  if (newUser.imageBase64) {
+    newUser.imagePath = saveBase64Image(newUser.imageBase64, id);
+  }
+  const result = await db.update(users).set(newUser).where(eq(users.id, id));
 
   SuccessResponse(res, { message: "User Updated successfully" }, 200);
 };

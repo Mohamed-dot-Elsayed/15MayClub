@@ -39,8 +39,8 @@ export const createCompetition = async (req: Request, res: Response) => {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
     });
-    if (images.length) {
-      images.forEach(async (imagePath: string) => {
+    if (images !== undefined && Object.keys(images).length > 0) {
+      images.forEach(async (imagePath: any) => {
         await tx.insert(competitionsImages).values({
           id: uuid4v(),
           competitionId: id,
@@ -59,12 +59,11 @@ export const getCompetitionUsers = async (req: Request, res: Response) => {
     .from(competitions)
     .where(eq(competitions.id, id));
   if (!competitionExists) throw new NotFound("Competition not found");
-  const [data] = await db
+  const data = await db
     .select()
     .from(userCompetition)
-    .where(eq(userCompetition.id, id));
-  if (!data) throw new NotFound("Competition not found");
-  SuccessResponse(res, { competition: data }, 200);
+    .where(eq(userCompetition.competitionId, id));
+  SuccessResponse(res, { users: data }, 200);
 };
 
 export const getCompetitionImages = async (req: Request, res: Response) => {
@@ -79,20 +78,25 @@ export const getCompetitionImages = async (req: Request, res: Response) => {
       image_path: competitionsImages.imagePath,
     })
     .from(competitionsImages)
-    .where(eq(competitionsImages.id, id));
+    .where(eq(competitionsImages.competitionId, id));
   SuccessResponse(res, { images_url: data }, 200);
 };
 
 export const deleteCompetition = async (req: Request, res: Response) => {
   const id = req.params.id;
+  console.log("here" + id);
   const [competitionExists] = await db
     .select()
     .from(competitions)
     .where(eq(competitions.id, id));
   if (!competitionExists) throw new NotFound("Competition not found");
   await db.transaction(async (tx) => {
-    await tx.delete(competitionsImages).where(eq(competitionsImages.id, id));
-    await tx.delete(userCompetition).where(eq(userCompetition.id, id));
+    await tx
+      .delete(competitionsImages)
+      .where(eq(competitionsImages.competitionId, id));
+    await tx
+      .delete(userCompetition)
+      .where(eq(userCompetition.competitionId, id));
     await tx.delete(competitions).where(eq(competitions.id, id));
   });
   SuccessResponse(res, { message: "Competition deleted successfully" }, 200);
@@ -106,16 +110,9 @@ export const updateCompetition = async (req: Request, res: Response) => {
     .where(eq(competitions.id, id));
   if (!competitionExists) throw new NotFound("Competition not found");
   const data = req.body;
-  if (data === undefined || Object.keys(data).length === 0)
-    throw new Error("No data provided for update");
-  const updates: any = {};
-  if (data.name) updates.name = data.name;
-  if (data.description) updates.description = data.description;
   if (data.mainImagepath)
-    updates.mainImagepath = saveBase64Image(data.mainImagepath, id);
-  if (data.startDate) updates.startDate = data.startDate;
-  if (data.endDate) updates.endDate = data.endDate;
-  await db.update(competitions).set(updates).where(eq(competitions.id, id));
+    data.mainImagepath = saveBase64Image(data.mainImagepath, id);
+  await db.update(competitions).set(data).where(eq(competitions.id, id));
   SuccessResponse(res, { message: "Competition updated successfully" }, 200);
 };
 

@@ -14,7 +14,7 @@ function saveBase64Image(base64, userId) {
     const ext = matches[1].split("/")[1];
     const buffer = Buffer.from(matches[2], "base64");
     const fileName = `${userId}.${ext}`;
-    const uploadsDir = path_1.default.join(__dirname, "..", "uploads");
+    const uploadsDir = path_1.default.join(__dirname, "../..", "uploads");
     if (!fs_1.default.existsSync(uploadsDir)) {
         fs_1.default.mkdirSync(uploadsDir);
     }

@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { saveBase64Image } from "../../utils/handleImages";
 import { db } from "../../models/db";
 import { emailVerifications, users } from "../../models/schema";
-import { eq, or } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
 import { SuccessResponse } from "../../utils/response";
@@ -161,8 +161,13 @@ export const sendResetCode = async (req: Request, res: Response) => {
   const [user] = await db.select().from(users).where(eq(users.email, email));
 
   if (!user) throw new NotFound("User not found");
-
+  if (!user.isVerified || user.status !== "approved")
+    throw new BadRequest("User is not verified or approved");
   const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+  await db
+    .delete(emailVerifications)
+    .where(eq(emailVerifications.userId, user.id));
 
   await db
     .insert(emailVerifications)
@@ -170,15 +175,14 @@ export const sendResetCode = async (req: Request, res: Response) => {
   await sendEmail(
     email,
     "Password Reset Code",
-    `Your reset code is: ${code}\nIt will expire in 10 minutes.`
+    `Your reset code is: ${code}\nIt will expire in 2 hours.`
   );
 
   SuccessResponse(res, { message: "Reset code sent to your email" }, 200);
 };
 
-export const resetPassword = async (req: Request, res: Response) => {
-  const { email, code, newPassword } = req.body;
-
+export const verifyCode = async (req: Request, res: Response) => {
+  const { email, code } = req.body;
   const [user] = await db.select().from(users).where(eq(users.email, email));
   const [rowcode] = await db
     .select()
@@ -187,6 +191,24 @@ export const resetPassword = async (req: Request, res: Response) => {
   if (!user || rowcode.code !== code) {
     throw new BadRequest("Invalid email or reset code");
   }
+  SuccessResponse(res, { message: "Code verified successfully" }, 200);
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { email, code, newPassword } = req.body;
+
+  const [user] = await db.select().from(users).where(eq(users.email, email));
+  if (!user) throw new NotFound("User not found");
+  const [rowcode] = await db
+    .select()
+    .from(emailVerifications)
+    .where(
+      and(
+        eq(emailVerifications.userId, user.id),
+        eq(emailVerifications.code, code)
+      )
+    );
+  if (!rowcode) throw new BadRequest("Invalid reset code");
 
   const hashed = await bcrypt.hash(newPassword, 10);
 

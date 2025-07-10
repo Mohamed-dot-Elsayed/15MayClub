@@ -11,6 +11,7 @@ router
     .get((0, catchAsync_1.catchAsync)(competitions_1.getAllCompetitions))
     .post((0, validation_1.validate)(competitions_2.createCompetitionSchema), (0, catchAsync_1.catchAsync)(competitions_1.createCompetition));
 router.delete("/:id/users/:userId", (0, validation_1.validate)(competitions_2.removeUserSchema), (0, catchAsync_1.catchAsync)(competitions_1.removeCompetitionUser));
+router.delete("/:id/users/:userId", (0, catchAsync_1.catchAsync)(competitions_1.removeCompetitionUser));
 router.get("/:id/users", (0, catchAsync_1.catchAsync)(competitions_1.getCompetitionUsers));
 router.get("/:id/images", (0, catchAsync_1.catchAsync)(competitions_1.getCompetitionImages));
 router

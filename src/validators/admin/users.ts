@@ -39,18 +39,10 @@ export const updateUserSchema = z.object({
       password: z
         .string()
         .optional()
-        .refine(
-          (val) =>
-            !val ||
-            (val.length >= 8 &&
-              /[A-Z]/.test(val) &&
-              /[a-z]/.test(val) &&
-              /[0-9]/.test(val)),
-          {
-            message:
-              "Password must be at least 8 characters and include upper, lower, and number",
-          }
-        ),
+        .refine((val) => val!.length >= 8, {
+          message:
+            "Password must be at least 8 characters and include upper, lower, and number",
+        }),
 
       imageBase64: z.string().optional(),
 

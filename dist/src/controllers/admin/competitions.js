@@ -36,7 +36,7 @@ const createCompetition = async (req, res) => {
             startDate: new Date(startDate),
             endDate: new Date(endDate),
         });
-        if (images.length) {
+        if (images !== undefined && Object.keys(images).length > 0) {
             images.forEach(async (imagePath) => {
                 await tx.insert(schema_1.competitionsImages).values({
                     id: (0, uuid_1.v4)(),
@@ -57,13 +57,11 @@ const getCompetitionUsers = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
-    const [data] = await db_1.db
+    const data = await db_1.db
         .select()
         .from(schema_1.userCompetition)
-        .where((0, drizzle_orm_1.eq)(schema_1.userCompetition.id, id));
-    if (!data)
-        throw new Errors_1.NotFound("Competition not found");
-    (0, response_1.SuccessResponse)(res, { competition: data }, 200);
+        .where((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id));
+    (0, response_1.SuccessResponse)(res, { users: data }, 200);
 };
 exports.getCompetitionUsers = getCompetitionUsers;
 const getCompetitionImages = async (req, res) => {
@@ -79,12 +77,13 @@ const getCompetitionImages = async (req, res) => {
         image_path: schema_1.competitionsImages.imagePath,
     })
         .from(schema_1.competitionsImages)
-        .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.id, id));
+        .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
     (0, response_1.SuccessResponse)(res, { images_url: data }, 200);
 };
 exports.getCompetitionImages = getCompetitionImages;
 const deleteCompetition = async (req, res) => {
     const id = req.params.id;
+    console.log("here" + id);
     const [competitionExists] = await db_1.db
         .select()
         .from(schema_1.competitions)
@@ -92,8 +91,12 @@ const deleteCompetition = async (req, res) => {
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
     await db_1.db.transaction(async (tx) => {
-        await tx.delete(schema_1.competitionsImages).where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.id, id));
-        await tx.delete(schema_1.userCompetition).where((0, drizzle_orm_1.eq)(schema_1.userCompetition.id, id));
+        await tx
+            .delete(schema_1.competitionsImages)
+            .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
+        await tx
+            .delete(schema_1.userCompetition)
+            .where((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id));
         await tx.delete(schema_1.competitions).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     });
     (0, response_1.SuccessResponse)(res, { message: "Competition deleted successfully" }, 200);
@@ -108,20 +111,9 @@ const updateCompetition = async (req, res) => {
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
     const data = req.body;
-    if (data === undefined || Object.keys(data).length === 0)
-        throw new Error("No data provided for update");
-    const updates = {};
-    if (data.name)
-        updates.name = data.name;
-    if (data.description)
-        updates.description = data.description;
     if (data.mainImagepath)
-        updates.mainImagepath = (0, handleImages_1.saveBase64Image)(data.mainImagepath, id);
-    if (data.startDate)
-        updates.startDate = data.startDate;
-    if (data.endDate)
-        updates.endDate = data.endDate;
-    await db_1.db.update(schema_1.competitions).set(updates).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+        data.mainImagepath = (0, handleImages_1.saveBase64Image)(data.mainImagepath, id);
+    await db_1.db.update(schema_1.competitions).set(data).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     (0, response_1.SuccessResponse)(res, { message: "Competition updated successfully" }, 200);
 };
 exports.updateCompetition = updateCompetition;

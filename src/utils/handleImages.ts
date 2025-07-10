@@ -11,7 +11,7 @@ export function saveBase64Image(base64: string, userId: string): string {
   const buffer = Buffer.from(matches[2], "base64");
 
   const fileName = `${userId}.${ext}`;
-  const uploadsDir = path.join(__dirname, "..", "uploads");
+  const uploadsDir = path.join(__dirname, "../..", "uploads");
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
   }

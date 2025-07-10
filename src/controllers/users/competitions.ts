@@ -5,10 +5,11 @@ import {
   competitionsImages,
   userCompetition,
 } from "../../models/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { SuccessResponse } from "../../utils/response";
 import { NotFound } from "../../Errors";
 import { v4 as uuidv4 } from "uuid";
+import { BadRequest } from "../../Errors/BadRequest";
 
 export const getCompetition = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -16,15 +17,15 @@ export const getCompetition = async (req: Request, res: Response) => {
   const [competition] = await db
     .select()
     .from(competitions)
-    .innerJoin(
-      competitionsImages,
-      eq(competitionsImages.competitionId, competitions.id)
-    )
     .where(eq(competitions.id, id));
+  const competitionImage = await db
+    .select()
+    .from(competitionsImages)
+    .where(eq(competitionsImages.competitionId, id));
 
   if (!competition) throw new NotFound("Competition not found");
 
-  SuccessResponse(res, { competition }, 200);
+  SuccessResponse(res, { competition, competitionImage }, 200);
 };
 
 export const getAllCompetitions = async (req: Request, res: Response) => {
@@ -40,7 +41,18 @@ export const participantsCompetitions = async (req: Request, res: Response) => {
     .select()
     .from(competitions)
     .where(eq(competitions.id, comid));
-  if (comp) throw new NotFound("competition not found");
+  if (!comp) throw new NotFound("competition not found");
+  const [participant] = await db
+    .select()
+    .from(userCompetition)
+    .where(
+      and(
+        eq(userCompetition.userId, userId),
+        eq(userCompetition.competitionId, comid)
+      )
+    );
+  if (participant)
+    throw new BadRequest("You have already participated in this competition");
   await db.insert(userCompetition).values({
     id: uuidv4(),
     userId: userId,

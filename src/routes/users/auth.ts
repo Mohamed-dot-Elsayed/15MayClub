@@ -6,6 +6,7 @@ import {
   verifyEmail,
   sendResetCode,
   resetPassword,
+  verifyCode,
 } from "../../controllers/users/auth";
 import { catchAsync } from "../../utils/catchAsync";
 import { validate } from "../../middlewares/validation";
@@ -15,6 +16,7 @@ import {
   signupSchema,
   verifyEmailSchema,
   resetPasswordSchema,
+  checkResetCodeSchema,
 } from "../../validators/users/auth";
 
 const route = Router();
@@ -27,6 +29,7 @@ route.post(
   catchAsync(verifyEmail)
 );
 route.post("/forgot-password", validate(sendResetCodeSchema), sendResetCode);
+route.post("/verify-code", validate(checkResetCodeSchema), verifyCode);
 route.post("/reset-password", validate(resetPasswordSchema), resetPassword);
 route.post("/fcm-token", catchAsync(getFcmToken));
 export default route;

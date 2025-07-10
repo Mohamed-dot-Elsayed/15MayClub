@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.sendResetCode = exports.getFcmToken = exports.verifyEmail = void 0;
+exports.resetPassword = exports.verifyCode = exports.sendResetCode = exports.getFcmToken = exports.verifyEmail = void 0;
 exports.signup = signup;
 exports.login = login;
 const handleImages_1 = require("../../utils/handleImages");
@@ -121,16 +121,21 @@ const sendResetCode = async (req, res) => {
     const [user] = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, email));
     if (!user)
         throw new Errors_1.NotFound("User not found");
+    if (!user.isVerified || user.status !== "approved")
+        throw new BadRequest_1.BadRequest("User is not verified or approved");
     const code = Math.floor(100000 + Math.random() * 900000).toString();
+    await db_1.db
+        .delete(schema_1.emailVerifications)
+        .where((0, drizzle_orm_1.eq)(schema_1.emailVerifications.userId, user.id));
     await db_1.db
         .insert(schema_1.emailVerifications)
         .values({ code: code, createdAt: new Date(), userId: user.id });
-    await (0, sendEmails_1.sendEmail)(email, "Password Reset Code", `Your reset code is: ${code}\nIt will expire in 10 minutes.`);
+    await (0, sendEmails_1.sendEmail)(email, "Password Reset Code", `Your reset code is: ${code}\nIt will expire in 2 hours.`);
     (0, response_1.SuccessResponse)(res, { message: "Reset code sent to your email" }, 200);
 };
 exports.sendResetCode = sendResetCode;
-const resetPassword = async (req, res) => {
-    const { email, code, newPassword } = req.body;
+const verifyCode = async (req, res) => {
+    const { email, code } = req.body;
     const [user] = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, email));
     const [rowcode] = await db_1.db
         .select()
@@ -139,6 +144,20 @@ const resetPassword = async (req, res) => {
     if (!user || rowcode.code !== code) {
         throw new BadRequest_1.BadRequest("Invalid email or reset code");
     }
+    (0, response_1.SuccessResponse)(res, { message: "Code verified successfully" }, 200);
+};
+exports.verifyCode = verifyCode;
+const resetPassword = async (req, res) => {
+    const { email, code, newPassword } = req.body;
+    const [user] = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.email, email));
+    if (!user)
+        throw new Errors_1.NotFound("User not found");
+    const [rowcode] = await db_1.db
+        .select()
+        .from(schema_1.emailVerifications)
+        .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.emailVerifications.userId, user.id), (0, drizzle_orm_1.eq)(schema_1.emailVerifications.code, code)));
+    if (!rowcode)
+        throw new BadRequest_1.BadRequest("Invalid reset code");
     const hashed = await bcrypt_1.default.hash(newPassword, 10);
     await db_1.db
         .update(schema_1.users)

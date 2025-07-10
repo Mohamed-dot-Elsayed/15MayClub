@@ -31,34 +31,14 @@ const updateUser = async (req, res) => {
     const [user] = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, id)).limit(1);
     if (!user)
         throw new Errors_1.NotFound("User not found");
-    if (newUser !== undefined && Object.keys(newUser).length > 0) {
-        if (newUser.password) {
-            newUser.password = await bcrypt_1.default.hash(newUser.password, 10);
-        }
-        const updates = {};
-        if (newUser.password)
-            updates.hashedPassword = newUser.password;
-        if (newUser.role)
-            updates.role = newUser.role;
-        if (newUser.name)
-            updates.name = newUser.name;
-        if (newUser.email)
-            updates.email = newUser.email;
-        if (newUser.role)
-            updates.role = newUser.role;
-        if (newUser.phoneNumber)
-            updates.phoneNumber = newUser.phoneNumber;
-        if (newUser.dateOfBirth)
-            updates.dateOfBirth = new Date(newUser.dateOfBirth);
-        if (newUser.imageBase64)
-            updates.image_path = (0, handleImages_1.saveBase64Image)(newUser.imageBase64, user.id);
-        console.log("Updates:", updates);
-        if (updates === undefined || Object.keys(updates).length === 0) {
-            (0, response_1.SuccessResponse)(res, { message: "User Updated successfully" }, 200);
-            return;
-        }
-        const result = await db_1.db.update(schema_1.users).set(updates).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
+    if (newUser.password) {
+        newUser.hashedPassword = await bcrypt_1.default.hash(newUser.password, 10);
+        delete newUser.password;
     }
+    if (newUser.imageBase64) {
+        newUser.imagePath = (0, handleImages_1.saveBase64Image)(newUser.imageBase64, id);
+    }
+    const result = await db_1.db.update(schema_1.users).set(newUser).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     (0, response_1.SuccessResponse)(res, { message: "User Updated successfully" }, 200);
 };
 exports.updateUser = updateUser;

@@ -10,6 +10,7 @@ route.post("/signup", (0, validation_1.validate)(auth_2.signupSchema), (0, catch
 route.post("/login", (0, validation_1.validate)(auth_2.loginSchema), (0, catchAsync_1.catchAsync)(auth_1.login));
 route.post("/verify-email", (0, validation_1.validate)(auth_2.verifyEmailSchema), (0, catchAsync_1.catchAsync)(auth_1.verifyEmail));
 route.post("/forgot-password", (0, validation_1.validate)(auth_2.sendResetCodeSchema), auth_1.sendResetCode);
+route.post("/verify-code", (0, validation_1.validate)(auth_2.checkResetCodeSchema), auth_1.verifyCode);
 route.post("/reset-password", (0, validation_1.validate)(auth_2.resetPasswordSchema), auth_1.resetPassword);
 route.post("/fcm-token", (0, catchAsync_1.catchAsync)(auth_1.getFcmToken));
 exports.default = route;

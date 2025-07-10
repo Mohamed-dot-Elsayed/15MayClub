@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPasswordSchema = exports.sendResetCodeSchema = exports.verifyEmailSchema = exports.loginSchema = exports.signupSchema = void 0;
+exports.resetPasswordSchema = exports.checkResetCodeSchema = exports.sendResetCodeSchema = exports.verifyEmailSchema = exports.loginSchema = exports.signupSchema = void 0;
 const zod_1 = require("zod");
 exports.signupSchema = zod_1.z.object({
     body: zod_1.z
@@ -11,15 +11,7 @@ exports.signupSchema = zod_1.z.object({
         }),
         role: zod_1.z.enum(["member", "guest"]),
         email: zod_1.z.string().email("Invalid email"),
-        password: zod_1.z
-            .string()
-            .refine((val) => !val ||
-            (val.length >= 8 &&
-                /[A-Z]/.test(val) &&
-                /[a-z]/.test(val) &&
-                /[0-9]/.test(val)), {
-            message: "Password must be at least 8 characters and include upper, lower, and number",
-        }),
+        password: zod_1.z.string().min(8, "Password must be at least 8 characters"),
         dateOfBirth: zod_1.z
             .string()
             .refine((val) => {
@@ -78,17 +70,22 @@ exports.sendResetCodeSchema = zod_1.z.object({
         email: zod_1.z.string().email("Invalid email"),
     }),
 });
+exports.checkResetCodeSchema = zod_1.z.object({
+    body: zod_1.z.object({
+        email: zod_1.z.string().email("Invalid email"),
+        code: zod_1.z.string().length(6, "Reset code must be 6 characters long"),
+    }),
+});
 exports.resetPasswordSchema = zod_1.z.object({
     body: zod_1.z.object({
         email: zod_1.z.string().email("Invalid email"),
         code: zod_1.z.string().length(6, "Reset code must be 6 characters long"),
         newPassword: zod_1.z
             .string()
-            .refine((val) => !val ||
-            (val.length >= 8 &&
-                /[A-Z]/.test(val) &&
-                /[a-z]/.test(val) &&
-                /[0-9]/.test(val)), {
+            .refine((val) => val.length >= 8 &&
+            /[A-Z]/.test(val) &&
+            /[a-z]/.test(val) &&
+            /[0-9]/.test(val), {
             message: "New password must be at least 8 characters and include upper, lower, and number",
         }),
     }),

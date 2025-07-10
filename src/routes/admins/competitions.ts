@@ -27,6 +27,7 @@ router.delete(
   validate(removeUserSchema),
   catchAsync(removeCompetitionUser)
 );
+router.delete("/:id/users/:userId", catchAsync(removeCompetitionUser));
 router.get("/:id/users", catchAsync(getCompetitionUsers));
 router.get("/:id/images", catchAsync(getCompetitionImages));
 router

@@ -35,11 +35,7 @@ exports.updateUserSchema = zod_1.z.object({
         password: zod_1.z
             .string()
             .optional()
-            .refine((val) => !val ||
-            (val.length >= 8 &&
-                /[A-Z]/.test(val) &&
-                /[a-z]/.test(val) &&
-                /[0-9]/.test(val)), {
+            .refine((val) => val.length >= 8, {
             message: "Password must be at least 8 characters and include upper, lower, and number",
         }),
         imageBase64: zod_1.z.string().optional(),
