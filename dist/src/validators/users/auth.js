@@ -6,29 +6,11 @@ exports.signupSchema = zod_1.z.object({
     body: zod_1.z
         .object({
         name: zod_1.z.string().min(3, "name must be at least 3 characters long"),
-        phoneNumber: zod_1.z.string().regex(/^01[0125][0-9]{8}$/, {
-            message: "Invalid Egyptian phone number",
-        }),
+        phoneNumber: zod_1.z.string(),
         role: zod_1.z.enum(["member", "guest"]),
         email: zod_1.z.string().email("Invalid email"),
         password: zod_1.z.string().min(8, "Password must be at least 8 characters"),
-        dateOfBirth: zod_1.z
-            .string()
-            .refine((val) => {
-            const date = new Date(val);
-            const today = new Date();
-            return !isNaN(date.getTime()) && date < today;
-        }, {
-            message: "Date of birth must be a valid past date",
-        })
-            .refine((val) => {
-            const dob = new Date(val);
-            const today = new Date();
-            const age = today.getFullYear() - dob.getFullYear();
-            return age >= 10 && age <= 120;
-        }, {
-            message: "Age must be between 10 and 120 years",
-        }),
+        dateOfBirth: zod_1.z.string(),
         purpose: zod_1.z.string().optional(),
         imageBase64: zod_1.z.string().optional(),
     })

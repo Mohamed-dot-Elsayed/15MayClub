@@ -4,35 +4,11 @@ export const signupSchema = z.object({
   body: z
     .object({
       name: z.string().min(3, "name must be at least 3 characters long"),
-      phoneNumber: z.string().regex(/^01[0125][0-9]{8}$/, {
-        message: "Invalid Egyptian phone number",
-      }),
+      phoneNumber: z.string(),
       role: z.enum(["member", "guest"]),
       email: z.string().email("Invalid email"),
       password: z.string().min(8, "Password must be at least 8 characters"),
-      dateOfBirth: z
-        .string()
-        .refine(
-          (val) => {
-            const date = new Date(val);
-            const today = new Date();
-            return !isNaN(date.getTime()) && date < today;
-          },
-          {
-            message: "Date of birth must be a valid past date",
-          }
-        )
-        .refine(
-          (val) => {
-            const dob = new Date(val);
-            const today = new Date();
-            const age = today.getFullYear() - dob.getFullYear();
-            return age >= 10 && age <= 120;
-          },
-          {
-            message: "Age must be between 10 and 120 years",
-          }
-        ),
+      dateOfBirth: z.string(),
       purpose: z.string().optional(),
       imageBase64: z.string().optional(),
     })

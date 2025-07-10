@@ -1,5 +1,6 @@
 import { authenticated } from "../../middlewares/authenticated";
 import { authorizeRoles } from "../../middlewares/authorized";
+import VotesRoute from "./votes";
 import ProfileRoute from "./Profile";
 import AuthRoute from "./auth";
 import ComplaintsRoute from "./complaints";
@@ -15,6 +16,7 @@ route.use(
   authorizeRoles("approved_member_user", "approved_guest_user")
 );
 route.use("/complaints", ComplaintsRoute);
+route.use("/votes", VotesRoute);
 route.use("/profile", ProfileRoute);
 route.use("/complaints", ComplaintsRoute);
 route.use("/competitions", CompetitionsRoute);

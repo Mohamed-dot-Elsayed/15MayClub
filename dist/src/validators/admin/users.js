@@ -20,12 +20,7 @@ exports.updateUserSchema = zod_1.z.object({
             .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
             message: "Invalid email address",
         }),
-        phoneNumber: zod_1.z
-            .string()
-            .optional()
-            .refine((val) => !val || /^01[0125][0-9]{8}$/.test(val), {
-            message: "Invalid phone number format",
-        }),
+        phoneNumber: zod_1.z.string().optional(),
         role: zod_1.z
             .string()
             .optional()

@@ -56,7 +56,10 @@ export const approveUser = async (req: Request, res: Response) => {
   if (!user) throw new NotFound("User not found");
   const result = await db
     .update(users)
-    .set({ status: "approved", updatedAt: new Date() })
+    .set({
+      status: "approved",
+      updatedAt: new Date(),
+    })
     .where(eq(users.id, id));
   await sendEmail(
     user.email,

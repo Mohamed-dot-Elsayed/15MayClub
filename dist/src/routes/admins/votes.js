@@ -19,6 +19,8 @@ router
     .route("/items/:itemId")
     .get((0, catchAsync_1.catchAsync)(votes_1.getOption))
     .delete((0, catchAsync_1.catchAsync)(votes_1.deleteOption));
+// Get vote result
+router.get("/:id/result", (0, catchAsync_1.catchAsync)(votes_1.getVoteResult));
 // Get, Edit and delete vote
 router
     .route("/:id")

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteOption = exports.getOption = exports.updateOptions = exports.getAllOptions = exports.deleteVote = exports.updateVote = exports.createVote = exports.getVote = exports.getAllVotes = void 0;
+exports.getVoteResult = exports.deleteOption = exports.getOption = exports.updateOptions = exports.getAllOptions = exports.deleteVote = exports.updateVote = exports.createVote = exports.getVote = exports.getAllVotes = void 0;
 const db_1 = require("../../models/db");
 const schema_1 = require("../../models/schema");
 const response_1 = require("../../utils/response");
@@ -58,14 +58,16 @@ const createVote = async (req, res) => {
             startDate: new Date(startDate),
             endDate: new Date(endDate),
         });
-        if (items.length) {
-            items.forEach(async (item) => {
-                await tx.insert(schema_1.votesItems).values({
-                    id: (0, uuid_1.v4)(),
-                    voteId: voteId,
-                    item,
+        if (items) {
+            if (items.length) {
+                items.forEach(async (item) => {
+                    await tx.insert(schema_1.votesItems).values({
+                        id: (0, uuid_1.v4)(),
+                        voteId: voteId,
+                        item,
+                    });
                 });
-            });
+            }
         }
     });
     (0, response_1.SuccessResponse)(res, { message: "vote created successfully" }, 201);
@@ -170,3 +172,5 @@ const deleteOption = async (req, res) => {
     (0, response_1.SuccessResponse)(res, { message: "option deleted" }, 200);
 };
 exports.deleteOption = deleteOption;
+const getVoteResult = async (req, res) => { };
+exports.getVoteResult = getVoteResult;

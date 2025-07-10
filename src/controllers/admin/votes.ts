@@ -63,14 +63,16 @@ export const createVote = async (req: Request, res: Response) => {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
     });
-    if (items.length) {
-      items.forEach(async (item: string) => {
-        await tx.insert(votesItems).values({
-          id: uuidv4(),
-          voteId: voteId,
-          item,
+    if (items) {
+      if (items.length) {
+        items.forEach(async (item: string) => {
+          await tx.insert(votesItems).values({
+            id: uuidv4(),
+            voteId: voteId,
+            item,
+          });
         });
-      });
+      }
     }
   });
   SuccessResponse(res, { message: "vote created successfully" }, 201);
@@ -169,3 +171,5 @@ export const deleteOption = async (req: Request, res: Response) => {
   await db.delete(votesItems).where(eq(votesItems.id, itemId));
   SuccessResponse(res, { message: "option deleted" }, 200);
 };
+
+export const getVoteResult = async (req: Request, res: Response) => {};

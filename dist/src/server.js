@@ -17,7 +17,7 @@ app.use((0, cors_1.default)({ origin: "*" }));
 app.use(cookieParser());
 app.use(express_1.default.json({ limit: "2mb" }));
 app.use(express_1.default.urlencoded({ extended: true, limit: "2mb" }));
-app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "./uploads")));
+app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../uploads")));
 app.get("/api/test", (req, res, next) => {
     res.json({ message: "API is working!" });
 });

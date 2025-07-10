@@ -58,7 +58,10 @@ const approveUser = async (req, res) => {
         throw new Errors_1.NotFound("User not found");
     const result = await db_1.db
         .update(schema_1.users)
-        .set({ status: "approved", updatedAt: new Date() })
+        .set({
+        status: "approved",
+        updatedAt: new Date(),
+    })
         .where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     await (0, sendEmails_1.sendEmail)(user.email, "Your account has been approved", "Congratulations! Your account has been approved by the admin. You can now log in and start using our services.");
     (0, response_1.SuccessResponse)(res, { message: "User approved successfully" }, 200);

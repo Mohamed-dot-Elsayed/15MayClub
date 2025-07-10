@@ -81,7 +81,6 @@ export async function signup(req: Request, res: Response) {
     res,
     {
       message: "User Signup successfully get verification code from gmail",
-      id: userId,
     },
     201
   );

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const authenticated_1 = require("../../middlewares/authenticated");
 const authorized_1 = require("../../middlewares/authorized");
+const votes_1 = __importDefault(require("./votes"));
 const Profile_1 = __importDefault(require("./Profile"));
 const auth_1 = __importDefault(require("./auth"));
 const complaints_1 = __importDefault(require("./complaints"));
@@ -17,6 +18,7 @@ route.use(upload.none());
 route.use("/auth", auth_1.default);
 route.use(authenticated_1.authenticated, (0, authorized_1.authorizeRoles)("approved_member_user", "approved_guest_user"));
 route.use("/complaints", complaints_1.default);
+route.use("/votes", votes_1.default);
 route.use("/profile", Profile_1.default);
 route.use("/complaints", complaints_1.default);
 route.use("/competitions", competitions_1.default);

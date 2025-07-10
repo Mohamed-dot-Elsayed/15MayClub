@@ -22,12 +22,7 @@ export const updateUserSchema = z.object({
           message: "Invalid email address",
         }),
 
-      phoneNumber: z
-        .string()
-        .optional()
-        .refine((val) => !val || /^01[0125][0-9]{8}$/.test(val), {
-          message: "Invalid phone number format",
-        }),
+      phoneNumber: z.string().optional(),
 
       role: z
         .string()
