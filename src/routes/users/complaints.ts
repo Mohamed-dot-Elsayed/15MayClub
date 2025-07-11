@@ -7,6 +7,8 @@ import {
 } from "../../controllers/users/complaints";
 import { createComplaintSchema } from "../../validators/users/complaints";
 const router = Router();
-router.post("/", validate(createComplaintSchema), catchAsync(createComplaints));
-router.get("/", catchAsync(getComplaintsCategory));
+router
+  .route("/")
+  .post(validate(createComplaintSchema), catchAsync(createComplaints))
+  .get(catchAsync(getComplaintsCategory));
 export default router;

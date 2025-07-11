@@ -4,8 +4,9 @@ import { db } from "../../models/db";
 import { posts, postsCategory, postsImages } from "../../models/schema";
 import { SuccessResponse } from "../../utils/response";
 import { eq } from "drizzle-orm";
-import { NotFound } from "../../Errors";
+import { NotFound, ConflictError } from "../../Errors";
 import { saveBase64Image } from "../../utils/handleImages";
+import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 // Categories
 export const createCategory = async (req: Request, res: Response) => {
@@ -67,9 +68,9 @@ export const createPost = async (req: Request, res: Response) => {
   if (images?.length) {
     const ide = uuidv4();
     await db.insert(postsImages).values(
-      images.map((img: string) => ({
+      images.map(async (img: string) => ({
         id: ide,
-        imagePath: saveBase64Image(img, ide),
+        imagePath: await saveBase64Image(img, ide, req, "posts"),
         postId,
       }))
     );
@@ -117,17 +118,27 @@ export const updatePost = async (req: Request, res: Response) => {
   // If images provided → replace
   if (images && Array.isArray(images)) {
     // Delete old images
-    await db.delete(postsImages).where(eq(postsImages.postId, postId));
-
-    // Insert new images
-    const imageValues = images.map((img: string) => {
-      const imageId = uuidv4();
-      return {
-        id: imageId,
-        imagePath: saveBase64Image(img, imageId),
-        postId,
-      };
+    const imagess = await db
+      .select()
+      .from(postsImages)
+      .where(eq(postsImages.postId, postId));
+    imagess.forEach(async (img) => {
+      const deleted = await deletePhotoFromServer(img.imagePath);
+      if (!deleted)
+        throw new ConflictError("Failed to delete post image from server");
     });
+    await db.delete(postsImages).where(eq(postsImages.postId, postId));
+    // Insert new images
+    const imageValues = await Promise.all(
+      images.map(async (img: string) => {
+        const imageId = uuidv4();
+        return {
+          id: imageId,
+          imagePath: await saveBase64Image(img, imageId, req, "posts"),
+          postId,
+        };
+      })
+    );
 
     if (imageValues.length > 0) {
       await db.insert(postsImages).values(imageValues);
@@ -144,7 +155,18 @@ export const deletePost = async (req: Request, res: Response) => {
     .from(posts)
     .where(eq(posts.id, postId));
   if (!existingPost) throw new NotFound("Post not found");
-  await db.delete(postsImages).where(eq(postsImages.postId, postId));
+  const images = await db
+    .select()
+    .from(postsImages)
+    .where(eq(postsImages.postId, postId));
+  if (images && images.length > 0) {
+    images.forEach(async (img) => {
+      const deleted = await deletePhotoFromServer(img.imagePath);
+      if (!deleted)
+        throw new ConflictError("Failed to delete post image from server");
+    });
+  }
+  await db.delete(postsImages).where(eq(postsImages.id, postId));
   await db.delete(posts).where(eq(posts.id, postId));
   SuccessResponse(res, { message: "Post deleted" }, 200);
 };

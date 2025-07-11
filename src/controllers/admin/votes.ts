@@ -1,6 +1,11 @@
 import { Response, Request } from "express";
 import { db } from "../../models/db";
-import { votes, votesItems } from "../../models/schema";
+import {
+  userVotes,
+  userVotesItems,
+  votes,
+  votesItems,
+} from "../../models/schema";
 import { SuccessResponse } from "../../utils/response";
 import { v4 as uuidv4 } from "uuid";
 import { eq, inArray } from "drizzle-orm";
@@ -60,8 +65,8 @@ export const createVote = async (req: Request, res: Response) => {
       id: voteId,
       name,
       maxSelections,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate),
+      startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+      endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
     });
     if (items) {
       if (items.length) {
@@ -86,8 +91,14 @@ export const updateVote = async (req: Request, res: Response) => {
   const updates: any = {};
   if (name) updates.name = name;
   if (maxSelections) updates.maxSelections = maxSelections;
-  if (startDate) updates.startDate = new Date(startDate);
-  if (endDate) updates.endDate = new Date(endDate);
+  if (startDate)
+    updates.startDate = new Date(
+      new Date(startDate).getTime() + 3 * 60 * 60 * 1000
+    ); // Adjusting for timezone
+  if (endDate)
+    updates.endDate = new Date(
+      new Date(endDate).getTime() + 3 * 60 * 60 * 1000
+    );
   console.log("updates", updates);
 
   if (updates && Object.keys(updates).length > 0)
@@ -101,6 +112,19 @@ export const deleteVote = async (req: Request, res: Response) => {
   if (!vote) throw new NotFound("Vote not found");
   await db.transaction(async (tx) => {
     await tx.delete(votesItems).where(eq(votesItems.voteId, id));
+    const userVotesList = await tx
+      .select({ id: userVotes.id })
+      .from(userVotes)
+      .where(eq(userVotes.voteId, id));
+    const userVoteIds = userVotesList.map((uv) => uv.id);
+    if (userVoteIds.length > 0) {
+      await tx
+        .delete(userVotesItems)
+        .where(inArray(userVotesItems.userVoteId, userVoteIds));
+
+      await tx.delete(userVotes).where(eq(userVotes.voteId, id));
+    }
+
     await tx.delete(votes).where(eq(votes.id, id));
   });
   SuccessResponse(res, { message: "vote deleted successfully" }, 200);

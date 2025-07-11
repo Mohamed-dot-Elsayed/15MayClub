@@ -8,6 +8,7 @@ const response_1 = require("../../utils/response");
 const drizzle_orm_1 = require("drizzle-orm");
 const Errors_1 = require("../../Errors");
 const handleImages_1 = require("../../utils/handleImages");
+const deleteImage_1 = require("../../utils/deleteImage");
 // Categories
 const createCategory = async (req, res) => {
     const { name } = req.body;
@@ -64,9 +65,9 @@ const createPost = async (req, res) => {
     await db_1.db.insert(schema_1.posts).values({ id: postId, title, categoryId });
     if (images?.length) {
         const ide = (0, uuid_1.v4)();
-        await db_1.db.insert(schema_1.postsImages).values(images.map((img) => ({
+        await db_1.db.insert(schema_1.postsImages).values(images.map(async (img) => ({
             id: ide,
-            imagePath: (0, handleImages_1.saveBase64Image)(img, ide),
+            imagePath: await (0, handleImages_1.saveBase64Image)(img, ide, req, "posts"),
             postId,
         })));
     }
@@ -108,16 +109,25 @@ const updatePost = async (req, res) => {
     // If images provided → replace
     if (images && Array.isArray(images)) {
         // Delete old images
+        const imagess = await db_1.db
+            .select()
+            .from(schema_1.postsImages)
+            .where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
+        imagess.forEach(async (img) => {
+            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(img.imagePath);
+            if (!deleted)
+                throw new Errors_1.ConflictError("Failed to delete post image from server");
+        });
         await db_1.db.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
         // Insert new images
-        const imageValues = images.map((img) => {
+        const imageValues = await Promise.all(images.map(async (img) => {
             const imageId = (0, uuid_1.v4)();
             return {
                 id: imageId,
-                imagePath: (0, handleImages_1.saveBase64Image)(img, imageId),
+                imagePath: await (0, handleImages_1.saveBase64Image)(img, imageId, req, "posts"),
                 postId,
             };
-        });
+        }));
         if (imageValues.length > 0) {
             await db_1.db.insert(schema_1.postsImages).values(imageValues);
         }
@@ -133,7 +143,18 @@ const deletePost = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
     if (!existingPost)
         throw new Errors_1.NotFound("Post not found");
-    await db_1.db.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
+    const images = await db_1.db
+        .select()
+        .from(schema_1.postsImages)
+        .where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
+    if (images && images.length > 0) {
+        images.forEach(async (img) => {
+            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(img.imagePath);
+            if (!deleted)
+                throw new Errors_1.ConflictError("Failed to delete post image from server");
+        });
+    }
+    await db_1.db.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.id, postId));
     await db_1.db.delete(schema_1.posts).where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
     (0, response_1.SuccessResponse)(res, { message: "Post deleted" }, 200);
 };

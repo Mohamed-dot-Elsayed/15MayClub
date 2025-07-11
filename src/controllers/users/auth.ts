@@ -20,38 +20,35 @@ import { BadRequest } from "../../Errors/BadRequest";
 export async function signup(req: Request, res: Response) {
   const data = req.body;
 
-  const existing = await db
+  const [existing] = await db
     .select()
     .from(users)
-    .where(eq(users.email, data.email));
-  if (existing.length > 0) {
-    throw new UniqueConstrainError(
-      "Email",
-      "User already signup with this email"
+    .where(
+      or(eq(users.email, data.email), eq(users.phoneNumber, data.phoneNumber))
     );
+  if (existing) {
+    if (existing.email === data.email)
+      throw new UniqueConstrainError(
+        "Email",
+        "User already signup with this email"
+      );
+    if (existing.phoneNumber === data.phoneNumber)
+      throw new UniqueConstrainError(
+        "Phone Number",
+        "User already signup with this phone number"
+      );
   }
-  const existingNumber = await db
-    .select()
-    .from(users)
-    .where(eq(users.phoneNumber, data.phoneNumber));
-  if (existingNumber.length > 0) {
-    throw new UniqueConstrainError(
-      "Phone Number",
-      "User already signup with this Phone Number"
-    );
-  }
-
   const hashedPassword = await bcrypt.hash(data.password, 10);
   const userId = uuidv4();
 
   let imagePath: string | null = null;
 
   if (data.role === "member") {
-    imagePath = saveBase64Image(data.imageBase64!, userId);
+    imagePath = await saveBase64Image(data.imageBase64!, userId, req, "users");
   }
   const code = randomInt(100000, 999999).toString();
 
-  await db.insert(users).values({
+  const newUse: any = {
     id: userId,
     name: data.name,
     phoneNumber: data.phoneNumber,
@@ -62,21 +59,25 @@ export async function signup(req: Request, res: Response) {
     imagePath,
     dateOfBirth: new Date(data.dateOfBirth),
     status: "pending",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  });
+    createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+    updatedAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+  };
 
-  await db.insert(emailVerifications).values({
-    userId: userId,
-    code,
-  });
   if (!req.user) {
+    await db.insert(emailVerifications).values({
+      userId: userId,
+      code,
+    });
     await sendEmail(
       data.email,
       "Email Verification",
       `Your verification code is ${code}`
     );
+  } else {
+    newUse.status = "approved";
+    newUse.isVerified = true;
   }
+  await db.insert(users).values(newUse);
 
   SuccessResponse(
     res,
@@ -150,7 +151,7 @@ export async function login(req: Request, res: Response) {
 
 export const getFcmToken = async (req: Request, res: Response) => {
   const { token } = req.body;
-  const userId = req.user!.id; // from auth middleware
+  const userId = req.user!.id;
 
   await db.update(users).set({ fcmtoken: token }).where(eq(users.id, userId));
   res.json({ success: true });

@@ -66,18 +66,6 @@ export const resetPasswordSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email"),
     code: z.string().length(6, "Reset code must be 6 characters long"),
-    newPassword: z
-      .string()
-      .refine(
-        (val) =>
-          val.length >= 8 &&
-          /[A-Z]/.test(val) &&
-          /[a-z]/.test(val) &&
-          /[0-9]/.test(val),
-        {
-          message:
-            "New password must be at least 8 characters and include upper, lower, and number",
-        }
-      ),
+    newPassword: z.string(),
   }),
 });

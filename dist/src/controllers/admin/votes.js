@@ -55,8 +55,8 @@ const createVote = async (req, res) => {
             id: voteId,
             name,
             maxSelections,
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+            endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
         });
         if (items) {
             if (items.length) {
@@ -85,9 +85,9 @@ const updateVote = async (req, res) => {
     if (maxSelections)
         updates.maxSelections = maxSelections;
     if (startDate)
-        updates.startDate = new Date(startDate);
+        updates.startDate = new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000); // Adjusting for timezone
     if (endDate)
-        updates.endDate = new Date(endDate);
+        updates.endDate = new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000);
     console.log("updates", updates);
     if (updates && Object.keys(updates).length > 0)
         await db_1.db.update(schema_1.votes).set(updates).where((0, drizzle_orm_1.eq)(schema_1.votes.id, id));
@@ -101,6 +101,17 @@ const deleteVote = async (req, res) => {
         throw new Errors_1.NotFound("Vote not found");
     await db_1.db.transaction(async (tx) => {
         await tx.delete(schema_1.votesItems).where((0, drizzle_orm_1.eq)(schema_1.votesItems.voteId, id));
+        const userVotesList = await tx
+            .select({ id: schema_1.userVotes.id })
+            .from(schema_1.userVotes)
+            .where((0, drizzle_orm_1.eq)(schema_1.userVotes.voteId, id));
+        const userVoteIds = userVotesList.map((uv) => uv.id);
+        if (userVoteIds.length > 0) {
+            await tx
+                .delete(schema_1.userVotesItems)
+                .where((0, drizzle_orm_1.inArray)(schema_1.userVotesItems.userVoteId, userVoteIds));
+            await tx.delete(schema_1.userVotes).where((0, drizzle_orm_1.eq)(schema_1.userVotes.voteId, id));
+        }
         await tx.delete(schema_1.votes).where((0, drizzle_orm_1.eq)(schema_1.votes.id, id));
     });
     (0, response_1.SuccessResponse)(res, { message: "vote deleted successfully" }, 200);

@@ -1,0 +1,9 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const posts_1 = require("../../controllers/users/posts");
+const catchAsync_1 = require("../../utils/catchAsync");
+const router = (0, express_1.Router)();
+router.get("/", (0, catchAsync_1.catchAsync)(posts_1.getPosts));
+router.route("/:id").post((0, catchAsync_1.catchAsync)(posts_1.reactPost)).get((0, catchAsync_1.catchAsync)(posts_1.getPostReacts));
+exports.default = router;

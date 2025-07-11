@@ -12,6 +12,7 @@ const response_1 = require("../../utils/response");
 const Errors_1 = require("../../Errors");
 const handleImages_1 = require("../../utils/handleImages");
 const sendEmails_1 = require("../../utils/sendEmails");
+const deleteImage_1 = require("../../utils/deleteImage");
 const getAllUsers = async (req, res) => {
     const allUsers = await db_1.db.select().from(schema_1.users);
     (0, response_1.SuccessResponse)(res, { users: allUsers }, 200);
@@ -36,7 +37,12 @@ const updateUser = async (req, res) => {
         delete newUser.password;
     }
     if (newUser.imageBase64) {
-        newUser.imagePath = (0, handleImages_1.saveBase64Image)(newUser.imageBase64, id);
+        if (user.imagePath) {
+            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(user.imagePath);
+            if (!deleted)
+                throw new Errors_1.ConflictError("Failed to delete old user image from server");
+        }
+        newUser.imagePath = await (0, handleImages_1.saveBase64Image)(newUser.imageBase64, id, req, "users");
     }
     const result = await db_1.db.update(schema_1.users).set(newUser).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     (0, response_1.SuccessResponse)(res, { message: "User Updated successfully" }, 200);
@@ -47,6 +53,11 @@ const deleteUser = async (req, res) => {
     const [user] = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     if (!user)
         throw new Errors_1.NotFound("User not found");
+    if (user.imagePath) {
+        const deleted = await (0, deleteImage_1.deletePhotoFromServer)(user.imagePath);
+        if (!deleted)
+            throw new Errors_1.ConflictError("Failed to delete user image from server");
+    }
     await db_1.db.delete(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     (0, response_1.SuccessResponse)(res, { message: "User deleted successfully" }, 200);
 };
@@ -60,7 +71,7 @@ const approveUser = async (req, res) => {
         .update(schema_1.users)
         .set({
         status: "approved",
-        updatedAt: new Date(),
+        updatedAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone if needed
     })
         .where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     await (0, sendEmails_1.sendEmail)(user.email, "Your account has been approved", "Congratulations! Your account has been approved by the admin. You can now log in and start using our services.");
@@ -77,7 +88,7 @@ const rejectUser = async (req, res) => {
         .update(schema_1.users)
         .set({
         status: "rejected",
-        updatedAt: new Date(),
+        updatedAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone if needed
         rejectionReason: rejectionReason,
     })
         .where((0, drizzle_orm_1.eq)(schema_1.users.id, id));

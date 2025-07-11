@@ -20,28 +20,24 @@ const sendEmails_1 = require("../../utils/sendEmails");
 const BadRequest_1 = require("../../Errors/BadRequest");
 async function signup(req, res) {
     const data = req.body;
-    const existing = await db_1.db
+    const [existing] = await db_1.db
         .select()
         .from(schema_1.users)
-        .where((0, drizzle_orm_1.eq)(schema_1.users.email, data.email));
-    if (existing.length > 0) {
-        throw new Errors_1.UniqueConstrainError("Email", "User already signup with this email");
-    }
-    const existingNumber = await db_1.db
-        .select()
-        .from(schema_1.users)
-        .where((0, drizzle_orm_1.eq)(schema_1.users.phoneNumber, data.phoneNumber));
-    if (existingNumber.length > 0) {
-        throw new Errors_1.UniqueConstrainError("Phone Number", "User already signup with this Phone Number");
+        .where((0, drizzle_orm_1.or)((0, drizzle_orm_1.eq)(schema_1.users.email, data.email), (0, drizzle_orm_1.eq)(schema_1.users.phoneNumber, data.phoneNumber)));
+    if (existing) {
+        if (existing.email === data.email)
+            throw new Errors_1.UniqueConstrainError("Email", "User already signup with this email");
+        if (existing.phoneNumber === data.phoneNumber)
+            throw new Errors_1.UniqueConstrainError("Phone Number", "User already signup with this phone number");
     }
     const hashedPassword = await bcrypt_1.default.hash(data.password, 10);
     const userId = (0, uuid_1.v4)();
     let imagePath = null;
     if (data.role === "member") {
-        imagePath = (0, handleImages_1.saveBase64Image)(data.imageBase64, userId);
+        imagePath = await (0, handleImages_1.saveBase64Image)(data.imageBase64, userId, req, "users");
     }
     const code = (0, crypto_1.randomInt)(100000, 999999).toString();
-    await db_1.db.insert(schema_1.users).values({
+    const newUse = {
         id: userId,
         name: data.name,
         phoneNumber: data.phoneNumber,
@@ -52,16 +48,21 @@ async function signup(req, res) {
         imagePath,
         dateOfBirth: new Date(data.dateOfBirth),
         status: "pending",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    });
-    await db_1.db.insert(schema_1.emailVerifications).values({
-        userId: userId,
-        code,
-    });
+        createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+        updatedAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+    };
     if (!req.user) {
+        await db_1.db.insert(schema_1.emailVerifications).values({
+            userId: userId,
+            code,
+        });
         await (0, sendEmails_1.sendEmail)(data.email, "Email Verification", `Your verification code is ${code}`);
     }
+    else {
+        newUse.status = "approved";
+        newUse.isVerified = true;
+    }
+    await db_1.db.insert(schema_1.users).values(newUse);
     (0, response_1.SuccessResponse)(res, {
         message: "User Signup successfully get verification code from gmail",
         userId: userId,
@@ -113,7 +114,7 @@ async function login(req, res) {
 }
 const getFcmToken = async (req, res) => {
     const { token } = req.body;
-    const userId = req.user.id; // from auth middleware
+    const userId = req.user.id;
     await db_1.db.update(schema_1.users).set({ fcmtoken: token }).where((0, drizzle_orm_1.eq)(schema_1.users.id, userId));
     res.json({ success: true });
 };

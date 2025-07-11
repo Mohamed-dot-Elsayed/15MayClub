@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeCompetitionUser = exports.updateCompetition = exports.deleteCompetition = exports.getCompetitionImages = exports.getCompetitionUsers = exports.createCompetition = exports.getCompetition = exports.getAllCompetitions = void 0;
+exports.removeCompetitionUser = exports.updateCompetitionImages = exports.updateCompetition = exports.deleteCompetition = exports.getCompetitionImages = exports.getCompetitionUsers = exports.createCompetition = exports.getCompetition = exports.getAllCompetitions = void 0;
 const db_1 = require("../../models/db");
 const schema_1 = require("../../models/schema");
 const response_1 = require("../../utils/response");
@@ -8,6 +8,7 @@ const drizzle_orm_1 = require("drizzle-orm");
 const Errors_1 = require("../../Errors");
 const uuid_1 = require("uuid");
 const handleImages_1 = require("../../utils/handleImages");
+const deleteImage_1 = require("../../utils/deleteImage");
 const getAllCompetitions = async (req, res) => {
     const data = await db_1.db.select().from(schema_1.competitions);
     (0, response_1.SuccessResponse)(res, { competitions: data }, 200);
@@ -32,16 +33,16 @@ const createCompetition = async (req, res) => {
             id: id,
             name,
             description,
-            mainImagepath: (0, handleImages_1.saveBase64Image)(mainImagepath, id),
-            startDate: new Date(startDate),
-            endDate: new Date(endDate),
+            mainImagepath: await (0, handleImages_1.saveBase64Image)(mainImagepath, id, req, "competitionsMain"),
+            startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000),
+            endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000),
         });
         if (images !== undefined && Object.keys(images).length > 0) {
             images.forEach(async (imagePath) => {
                 await tx.insert(schema_1.competitionsImages).values({
                     id: (0, uuid_1.v4)(),
                     competitionId: id,
-                    imagePath: (0, handleImages_1.saveBase64Image)(imagePath, id),
+                    imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, id, req, "competitionsImages"),
                 });
             });
         }
@@ -90,14 +91,28 @@ const deleteCompetition = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
+    const deleted = await (0, deleteImage_1.deletePhotoFromServer)(competitionExists.mainImagepath);
+    if (!deleted)
+        throw new Errors_1.ConflictError("Failed to delete main image from server");
     await db_1.db.transaction(async (tx) => {
-        await tx
-            .delete(schema_1.competitionsImages)
+        const images = await db_1.db
+            .select()
+            .from(schema_1.competitionsImages)
             .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
-        await tx
-            .delete(schema_1.userCompetition)
-            .where((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id));
-        await tx.delete(schema_1.competitions).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+        if (images && images.length > 0) {
+            images.forEach(async (img) => {
+                const deleted = await (0, deleteImage_1.deletePhotoFromServer)(img.imagePath);
+                if (!deleted)
+                    throw new Errors_1.ConflictError("Failed to delete post image from server");
+            });
+            await tx
+                .delete(schema_1.competitionsImages)
+                .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
+            await tx
+                .delete(schema_1.userCompetition)
+                .where((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id));
+            await tx.delete(schema_1.competitions).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+        }
     });
     (0, response_1.SuccessResponse)(res, { message: "Competition deleted successfully" }, 200);
 };
@@ -112,11 +127,18 @@ const updateCompetition = async (req, res) => {
         throw new Errors_1.NotFound("Competition not found");
     const data = req.body;
     if (data.mainImagepath)
-        data.mainImagepath = (0, handleImages_1.saveBase64Image)(data.mainImagepath, id);
+        data.mainImagepath = await (0, handleImages_1.saveBase64Image)(data.mainImagepath, id, req, "competitionsMain");
+    if (data.startDate)
+        data.startDate = new Date(new Date(data.startDate).getTime() + 3 * 60 * 60 * 1000);
+    if (data.endDate)
+        data.endDate = new Date(new Date(data.endDate).getTime() + 3 * 60 * 60 * 1000);
     await db_1.db.update(schema_1.competitions).set(data).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     (0, response_1.SuccessResponse)(res, { message: "Competition updated successfully" }, 200);
 };
 exports.updateCompetition = updateCompetition;
+// Not Complete
+const updateCompetitionImages = async (req, res) => { };
+exports.updateCompetitionImages = updateCompetitionImages;
 const removeCompetitionUser = async (req, res) => {
     const id = req.params.id;
     const userId = req.params.userId;

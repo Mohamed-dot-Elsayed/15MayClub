@@ -96,7 +96,6 @@ exports.reacts = (0, mysql_core_1.mysqlTable)("reacts", {
     postId: (0, mysql_core_1.varchar)("post_id", { length: 36 })
         .notNull()
         .references(() => exports.posts.id),
-    status: (0, mysql_core_1.boolean)("status").default(true).notNull(),
 }, (table) => [(0, mysql_core_1.unique)("unique_user_post_react").on(table.userId, table.postId)]);
 // COMPLAINTS
 exports.complaintsCategory = (0, mysql_core_1.mysqlTable)("complaints_category", {

@@ -4,9 +4,10 @@ import { db } from "../../models/db";
 import { users } from "../../models/schema";
 import { eq } from "drizzle-orm";
 import { SuccessResponse } from "../../utils/response";
-import { NotFound } from "../../Errors";
+import { ConflictError, NotFound } from "../../Errors";
 import { saveBase64Image } from "../../utils/handleImages";
 import { sendEmail } from "../../utils/sendEmails";
+import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const allUsers = await db.select().from(users);
@@ -33,7 +34,17 @@ export const updateUser = async (req: Request, res: Response) => {
     delete newUser.password;
   }
   if (newUser.imageBase64) {
-    newUser.imagePath = saveBase64Image(newUser.imageBase64, id);
+    if (user.imagePath) {
+      const deleted = await deletePhotoFromServer(user.imagePath);
+      if (!deleted)
+        throw new ConflictError("Failed to delete old user image from server");
+    }
+    newUser.imagePath = await saveBase64Image(
+      newUser.imageBase64,
+      id,
+      req,
+      "users"
+    );
   }
   const result = await db.update(users).set(newUser).where(eq(users.id, id));
 
@@ -44,6 +55,11 @@ export const deleteUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   const [user] = await db.select().from(users).where(eq(users.id, id));
   if (!user) throw new NotFound("User not found");
+  if (user.imagePath) {
+    const deleted = await deletePhotoFromServer(user.imagePath);
+    if (!deleted)
+      throw new ConflictError("Failed to delete user image from server");
+  }
 
   await db.delete(users).where(eq(users.id, id));
 
@@ -58,7 +74,7 @@ export const approveUser = async (req: Request, res: Response) => {
     .update(users)
     .set({
       status: "approved",
-      updatedAt: new Date(),
+      updatedAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone if needed
     })
     .where(eq(users.id, id));
   await sendEmail(
@@ -78,7 +94,7 @@ export const rejectUser = async (req: Request, res: Response) => {
     .update(users)
     .set({
       status: "rejected",
-      updatedAt: new Date(),
+      updatedAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone if needed
       rejectionReason: rejectionReason,
     })
     .where(eq(users.id, id));

@@ -118,7 +118,6 @@ export const reacts = mysqlTable(
     postId: varchar("post_id", { length: 36 })
       .notNull()
       .references(() => posts.id),
-    status: boolean("status").default(true).notNull(),
   },
   (table) => [unique("unique_user_post_react").on(table.userId, table.postId)]
 );

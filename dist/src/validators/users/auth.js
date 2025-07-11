@@ -62,13 +62,6 @@ exports.resetPasswordSchema = zod_1.z.object({
     body: zod_1.z.object({
         email: zod_1.z.string().email("Invalid email"),
         code: zod_1.z.string().length(6, "Reset code must be 6 characters long"),
-        newPassword: zod_1.z
-            .string()
-            .refine((val) => val.length >= 8 &&
-            /[A-Z]/.test(val) &&
-            /[a-z]/.test(val) &&
-            /[0-9]/.test(val), {
-            message: "New password must be at least 8 characters and include upper, lower, and number",
-        }),
+        newPassword: zod_1.z.string(),
     }),
 });
