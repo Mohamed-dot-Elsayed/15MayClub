@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const authenticated_1 = require("../../middlewares/authenticated");
 const authorized_1 = require("../../middlewares/authorized");
 const posts_1 = __importDefault(require("./posts"));
+const sliders_1 = __importDefault(require("./sliders"));
+const popUps_1 = __importDefault(require("./popUps"));
 const competitions_1 = __importDefault(require("./competitions"));
 const complaints_1 = __importDefault(require("./complaints"));
 const complaintsCategory_1 = __importDefault(require("./complaintsCategory"));
@@ -19,6 +21,8 @@ route.use(authenticated_1.authenticated, (0, authorized_1.authorizeRoles)("admin
 route.use("/users", users_1.default);
 route.use("/votes", votes_1.default);
 route.use("/posts", posts_1.default);
+route.use("/popups", popUps_1.default);
+route.use("/sliders", sliders_1.default);
 route.use("/complaints/category", complaintsCategory_1.default);
 route.use("/complaints", complaints_1.default);
 route.use("/competitions", competitions_1.default);

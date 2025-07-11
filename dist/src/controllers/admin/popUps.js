@@ -1,0 +1,83 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.deletePopUp = exports.updatePopUp = exports.getPopUpById = exports.getAllPopUps = exports.createPopUp = void 0;
+const db_1 = require("../../models/db");
+const schema_1 = require("../../models/schema");
+const uuid_1 = require("uuid");
+const drizzle_orm_1 = require("drizzle-orm");
+const handleImages_1 = require("../../utils/handleImages");
+const response_1 = require("../../utils/response");
+const Errors_1 = require("../../Errors");
+const deleteImage_1 = require("../../utils/deleteImage");
+const createPopUp = async (req, res) => {
+    let { title, imagePath, startDate, endDate, status = "active", pageIds, } = req.body;
+    const id = (0, uuid_1.v4)();
+    imagePath = await (0, handleImages_1.saveBase64Image)(imagePath, id, req, "popups");
+    await db_1.db.transaction(async (tx) => {
+        await tx
+            .insert(schema_1.popUpsImages)
+            .values({ id, title, imagePath, startDate, endDate, status });
+        await tx.insert(schema_1.popUpsPages).values(pageIds.map((pageId) => ({
+            id: (0, uuid_1.v4)(),
+            imageId: id,
+            pageId,
+        })));
+    });
+    (0, response_1.SuccessResponse)(res, { message: "Popup created successfully" }, 201);
+};
+exports.createPopUp = createPopUp;
+const getAllPopUps = async (_req, res) => {
+    const result = await db_1.db.select().from(schema_1.popUpsImages);
+    (0, response_1.SuccessResponse)(res, { popups: result }, 200);
+};
+exports.getAllPopUps = getAllPopUps;
+const getPopUpById = async (req, res) => {
+    const id = req.params.id;
+    const [popup] = await db_1.db
+        .select()
+        .from(schema_1.popUpsImages)
+        .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id))
+        .leftJoin(schema_1.popUpsPages, (0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, schema_1.popUpsImages.id));
+    if (!popup)
+        throw new Errors_1.NotFound("Popup not found");
+    (0, response_1.SuccessResponse)(res, { popup: popup }, 200);
+};
+exports.getPopUpById = getPopUpById;
+const updatePopUp = async (req, res) => {
+    const id = req.params.id;
+    const data = req.body;
+    await db_1.db.transaction(async (tx) => {
+        if (Object.keys(data).length > 0) {
+            const { pageIds, ...updateData } = data;
+            await tx
+                .update(schema_1.popUpsImages)
+                .set(updateData)
+                .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
+            if (pageIds) {
+                await tx.delete(schema_1.popUpsPages).where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id));
+                await tx.insert(schema_1.popUpsPages).values(pageIds.map((pageId) => ({
+                    id: (0, uuid_1.v4)(),
+                    imageId: id,
+                    pageId,
+                })));
+            }
+        }
+    });
+    (0, response_1.SuccessResponse)(res, { message: "Popup updated successfully" }, 200);
+};
+exports.updatePopUp = updatePopUp;
+const deletePopUp = async (req, res) => {
+    const id = req.params.id;
+    const [popup] = await db_1.db
+        .select()
+        .from(schema_1.popUpsImages)
+        .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
+    if (!popup)
+        throw new Errors_1.NotFound("Popup not found");
+    await (0, deleteImage_1.deletePhotoFromServer)(popup.imagePath);
+    await db_1.db.transaction(async (tx) => {
+        await tx.delete(schema_1.popUpsImages).where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
+    });
+    (0, response_1.SuccessResponse)(res, { message: "Popup deleted successfully" }, 200);
+};
+exports.deletePopUp = deletePopUp;
