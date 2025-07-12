@@ -1,3 +1,4 @@
 .env
 node_modules
 src/upload
+src/utils/mayclub-691bb-firebase-adminsdk-fbsvc-c6e9fe6d70.json

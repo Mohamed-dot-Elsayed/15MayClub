@@ -5,7 +5,8 @@ import { errorHandler } from "./middlewares/errorHandler";
 import { NotFound } from "./Errors";
 import dotenv from "dotenv";
 import cors from "cors";
-import cookieParser = require("cookie-parser");
+import cookieParser from "cookie-parser";
+import "./utils/birthDateCron";
 dotenv.config();
 
 const app = express();
@@ -15,7 +16,7 @@ app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.get("/api/test", (req, res, next) => {
-  res.json({ message: "API is working! casacde" });
+  res.json({ message: "API is working! notify token" });
 });
 app.use("/api", ApiRoute);
 app.use((req, res, next) => {
