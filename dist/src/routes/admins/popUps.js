@@ -15,4 +15,13 @@ router
     .get((0, catchAsync_1.catchAsync)(popUps_1.getPopUpById))
     .delete((0, catchAsync_1.catchAsync)(popUps_1.deletePopUp))
     .put((0, validation_1.validate)(popUps_2.updatePopUpSchema), (0, catchAsync_1.catchAsync)(popUps_1.updatePopUp));
+router
+    .route("/Apppages")
+    .get((0, catchAsync_1.catchAsync)(popUps_1.getAllAppPages))
+    .post((0, catchAsync_1.catchAsync)(popUps_1.createAppPage));
+router
+    .route("/Apppages/:id")
+    .put((0, catchAsync_1.catchAsync)(popUps_1.updateAppPage))
+    .delete((0, catchAsync_1.catchAsync)(popUps_1.deleteAppPage))
+    .get((0, catchAsync_1.catchAsync)(popUps_1.getAppPageById));
 exports.default = router;

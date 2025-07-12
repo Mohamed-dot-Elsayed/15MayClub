@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePopUp = exports.updatePopUp = exports.getPopUpById = exports.getAllPopUps = exports.createPopUp = void 0;
+exports.deleteAppPage = exports.updateAppPage = exports.createAppPage = exports.getAppPageById = exports.getAllAppPages = exports.deletePopUp = exports.updatePopUp = exports.getPopUpById = exports.getAllPopUps = exports.createPopUp = void 0;
 const db_1 = require("../../models/db");
 const schema_1 = require("../../models/schema");
 const uuid_1 = require("uuid");
@@ -81,3 +81,40 @@ const deletePopUp = async (req, res) => {
     (0, response_1.SuccessResponse)(res, { message: "Popup deleted successfully" }, 200);
 };
 exports.deletePopUp = deletePopUp;
+// App Pages
+const getAllAppPages = async (req, res) => {
+    const Apppages = await db_1.db.select().from(schema_1.appPages);
+    (0, response_1.SuccessResponse)(res, { Apppages }, 200);
+};
+exports.getAllAppPages = getAllAppPages;
+const getAppPageById = async (req, res) => {
+    const id = req.params.id;
+    const [page] = await db_1.db.select().from(schema_1.appPages).where((0, drizzle_orm_1.eq)(schema_1.appPages.id, id));
+    if (!page)
+        throw new Errors_1.NotFound("App page not found");
+    (0, response_1.SuccessResponse)(res, { page }, 200);
+};
+exports.getAppPageById = getAppPageById;
+const createAppPage = async (req, res) => {
+    const { name } = req.body;
+    const id = (0, uuid_1.v4)();
+    await db_1.db.insert(schema_1.appPages).values({ id, name });
+    (0, response_1.SuccessResponse)(res, { message: "App page created successfully" }, 201);
+};
+exports.createAppPage = createAppPage;
+const updateAppPage = async (req, res) => {
+    const id = req.params.id;
+    const { name } = req.body;
+    await db_1.db.update(schema_1.appPages).set({ name }).where((0, drizzle_orm_1.eq)(schema_1.appPages.id, id));
+    (0, response_1.SuccessResponse)(res, { message: "App page updated successfully" }, 200);
+};
+exports.updateAppPage = updateAppPage;
+const deleteAppPage = async (req, res) => {
+    const id = req.params.id;
+    const [page] = await db_1.db.select().from(schema_1.appPages).where((0, drizzle_orm_1.eq)(schema_1.appPages.id, id));
+    if (!page)
+        throw new Errors_1.NotFound("App page not found");
+    await db_1.db.delete(schema_1.appPages).where((0, drizzle_orm_1.eq)(schema_1.appPages.id, id));
+    (0, response_1.SuccessResponse)(res, { message: "App page deleted successfully" }, 200);
+};
+exports.deleteAppPage = deleteAppPage;

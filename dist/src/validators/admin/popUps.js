@@ -6,11 +6,11 @@ const zod_1 = require("zod");
 exports.createPopUpSchema = zod_1.z.object({
     body: zod_1.z.object({
         title: zod_1.z.string().min(1),
-        imagePath: zod_1.z.string().url().or(zod_1.z.string().min(1)), // support base64 or URL
+        imagePath: zod_1.z.string(), // support base64 or URL
         startDate: zod_1.z.date(), // YYYY-MM-DD
         endDate: zod_1.z.date(), // YYYY-MM-DD
         status: zod_1.z.enum(["active", "disabled"]).optional(),
-        pageIds: zod_1.z.array(zod_1.z.string().uuid()).min(1),
+        pageIds: zod_1.z.array(zod_1.z.string()).min(1),
     }),
 });
 exports.updatePopUpSchema = zod_1.z.object({

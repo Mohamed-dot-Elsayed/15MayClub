@@ -1,7 +1,7 @@
 // controllers/popups.controller.ts
 import { Request, Response } from "express";
 import { db } from "../../models/db";
-import { popUpsImages, popUpsPages } from "../../models/schema";
+import { appPages, popUpsImages, popUpsPages } from "../../models/schema";
 import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
 import { saveBase64Image } from "../../utils/handleImages";
@@ -92,4 +92,39 @@ export const deletePopUp = async (req: Request, res: Response) => {
     await tx.delete(popUpsImages).where(eq(popUpsImages.id, id));
   });
   SuccessResponse(res, { message: "Popup deleted successfully" }, 200);
+};
+
+// App Pages
+export const getAllAppPages = async (req: Request, res: Response) => {
+  const Apppages = await db.select().from(appPages);
+  SuccessResponse(res, { Apppages }, 200);
+};
+
+export const getAppPageById = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const [page] = await db.select().from(appPages).where(eq(appPages.id, id));
+  if (!page) throw new NotFound("App page not found");
+  SuccessResponse(res, { page }, 200);
+};
+
+export const createAppPage = async (req: Request, res: Response) => {
+  const { name } = req.body;
+  const id = uuidv4();
+  await db.insert(appPages).values({ id, name });
+  SuccessResponse(res, { message: "App page created successfully" }, 201);
+};
+
+export const updateAppPage = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const { name } = req.body;
+  await db.update(appPages).set({ name }).where(eq(appPages.id, id));
+  SuccessResponse(res, { message: "App page updated successfully" }, 200);
+};
+
+export const deleteAppPage = async (req: Request, res: Response) => {
+  const id = req.params.id;
+  const [page] = await db.select().from(appPages).where(eq(appPages.id, id));
+  if (!page) throw new NotFound("App page not found");
+  await db.delete(appPages).where(eq(appPages.id, id));
+  SuccessResponse(res, { message: "App page deleted successfully" }, 200);
 };

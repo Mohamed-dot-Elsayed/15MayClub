@@ -5,6 +5,11 @@ import {
   updatePopUp,
   getAllPopUps,
   getPopUpById,
+  getAllAppPages,
+  createAppPage,
+  updateAppPage,
+  deleteAppPage,
+  getAppPageById,
 } from "../../controllers/admin/popUps";
 import { validate } from "../../middlewares/validation";
 import { catchAsync } from "../../utils/catchAsync";
@@ -23,4 +28,14 @@ router
   .get(catchAsync(getPopUpById))
   .delete(catchAsync(deletePopUp))
   .put(validate(updatePopUpSchema), catchAsync(updatePopUp));
+
+router
+  .route("/Apppages")
+  .get(catchAsync(getAllAppPages))
+  .post(catchAsync(createAppPage));
+router
+  .route("/Apppages/:id")
+  .put(catchAsync(updateAppPage))
+  .delete(catchAsync(deleteAppPage))
+  .get(catchAsync(getAppPageById));
 export default router;
