@@ -31,6 +31,10 @@ export const errorHandler: ErrorRequestHandler = (
   } else if (err instanceof Jwt.TokenExpiredError) {
     statusCode = 401;
     message = "Token expired";
+  } else if (err.type === "entity.too.large") {
+    statusCode = 413;
+    message = "The uploaded image is too large. Please upload a smaller image.";
+    details = "Max request size exceeded. Limit is 10MB.";
   }
 
   const response: IErrorResponse = {

@@ -43,13 +43,29 @@ export const getAllPopUps = async (_req: Request, res: Response) => {
 
 export const getPopUpById = async (req: Request, res: Response) => {
   const id = req.params.id;
+
   const [popup] = await db
     .select()
     .from(popUpsImages)
-    .where(eq(popUpsImages.id, id))
-    .leftJoin(popUpsPages, eq(popUpsPages.imageId, popUpsImages.id));
+    .where(eq(popUpsImages.id, id));
+
   if (!popup) throw new NotFound("Popup not found");
-  SuccessResponse(res, { popup: popup }, 200);
+
+  const pages = await db
+    .select()
+    .from(popUpsPages)
+    .where(eq(popUpsPages.imageId, id));
+
+  SuccessResponse(
+    res,
+    {
+      popup: {
+        ...popup,
+        pages, // attach all related pages
+      },
+    },
+    200
+  );
 };
 
 export const updatePopUp = async (req: Request, res: Response) => {

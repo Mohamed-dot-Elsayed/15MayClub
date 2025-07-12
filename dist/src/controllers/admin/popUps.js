@@ -36,11 +36,19 @@ const getPopUpById = async (req, res) => {
     const [popup] = await db_1.db
         .select()
         .from(schema_1.popUpsImages)
-        .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id))
-        .leftJoin(schema_1.popUpsPages, (0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, schema_1.popUpsImages.id));
+        .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
     if (!popup)
         throw new Errors_1.NotFound("Popup not found");
-    (0, response_1.SuccessResponse)(res, { popup: popup }, 200);
+    const pages = await db_1.db
+        .select()
+        .from(schema_1.popUpsPages)
+        .where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id));
+    (0, response_1.SuccessResponse)(res, {
+        popup: {
+            ...popup,
+            pages, // attach all related pages
+        },
+    }, 200);
 };
 exports.getPopUpById = getPopUpById;
 const updatePopUp = async (req, res) => {
