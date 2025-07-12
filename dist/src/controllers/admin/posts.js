@@ -64,12 +64,16 @@ const createPost = async (req, res) => {
     const postId = (0, uuid_1.v4)();
     await db_1.db.insert(schema_1.posts).values({ id: postId, title, categoryId });
     if (images?.length) {
-        const ide = (0, uuid_1.v4)();
-        await db_1.db.insert(schema_1.postsImages).values(images.map(async (img) => ({
-            id: ide,
-            imagePath: await (0, handleImages_1.saveBase64Image)(img, ide, req, "posts"),
-            postId,
-        })));
+        const imageData = await Promise.all(images.map(async (img) => {
+            const ide = (0, uuid_1.v4)();
+            const imagePath = await (0, handleImages_1.saveBase64Image)(img, ide, req, "posts");
+            return {
+                id: ide,
+                imagePath,
+                postId,
+            };
+        }));
+        await db_1.db.insert(schema_1.postsImages).values(imageData);
     }
     (0, response_1.SuccessResponse)(res, { message: "Post created", postId }, 201);
 };

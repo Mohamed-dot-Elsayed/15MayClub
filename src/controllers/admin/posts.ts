@@ -66,14 +66,19 @@ export const createPost = async (req: Request, res: Response) => {
   await db.insert(posts).values({ id: postId, title, categoryId });
 
   if (images?.length) {
-    const ide = uuidv4();
-    await db.insert(postsImages).values(
-      images.map(async (img: string) => ({
-        id: ide,
-        imagePath: await saveBase64Image(img, ide, req, "posts"),
-        postId,
-      }))
+    const imageData = await Promise.all(
+      images.map(async (img: string) => {
+        const ide = uuidv4();
+        const imagePath = await saveBase64Image(img, ide, req, "posts");
+        return {
+          id: ide,
+          imagePath,
+          postId,
+        };
+      })
     );
+
+    await db.insert(postsImages).values(imageData);
   }
 
   SuccessResponse(res, { message: "Post created", postId }, 201);

@@ -19,6 +19,15 @@ import {
 } from "../../validators/admin/popUps";
 const router = Router();
 router
+  .route("/Apppages")
+  .get(catchAsync(getAllAppPages))
+  .post(catchAsync(createAppPage));
+router
+  .route("/Apppages/:id")
+  .put(catchAsync(updateAppPage))
+  .delete(catchAsync(deleteAppPage))
+  .get(catchAsync(getAppPageById));
+router
   .route("/")
   .post(validate(createPopUpSchema), catchAsync(createPopUp))
   .get(catchAsync(getAllPopUps));
@@ -29,13 +38,4 @@ router
   .delete(catchAsync(deletePopUp))
   .put(validate(updatePopUpSchema), catchAsync(updatePopUp));
 
-router
-  .route("/Apppages")
-  .get(catchAsync(getAllAppPages))
-  .post(catchAsync(createAppPage));
-router
-  .route("/Apppages/:id")
-  .put(catchAsync(updateAppPage))
-  .delete(catchAsync(deleteAppPage))
-  .get(catchAsync(getAppPageById));
 export default router;
