@@ -5,8 +5,12 @@ export const createPopUpSchema = z.object({
   body: z.object({
     title: z.string().min(1),
     imagePath: z.string(), // support base64 or URL
-    startDate: z.date(), // YYYY-MM-DD
-    endDate: z.date(), // YYYY-MM-DD
+    startDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: "Invalid startDate",
+    }), // YYYY-MM-DD
+    endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+      message: "Invalid startDate",
+    }), // YYYY-MM-DD
     status: z.enum(["active", "disabled"]).optional(),
     pageIds: z.array(z.string()).min(1),
   }),

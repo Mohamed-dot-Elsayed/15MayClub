@@ -7,8 +7,12 @@ exports.createPopUpSchema = zod_1.z.object({
     body: zod_1.z.object({
         title: zod_1.z.string().min(1),
         imagePath: zod_1.z.string(), // support base64 or URL
-        startDate: zod_1.z.date(), // YYYY-MM-DD
-        endDate: zod_1.z.date(), // YYYY-MM-DD
+        startDate: zod_1.z.string().refine((val) => !isNaN(Date.parse(val)), {
+            message: "Invalid startDate",
+        }), // YYYY-MM-DD
+        endDate: zod_1.z.string().refine((val) => !isNaN(Date.parse(val)), {
+            message: "Invalid startDate",
+        }), // YYYY-MM-DD
         status: zod_1.z.enum(["active", "disabled"]).optional(),
         pageIds: zod_1.z.array(zod_1.z.string()).min(1),
     }),
