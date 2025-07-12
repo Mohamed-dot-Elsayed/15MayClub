@@ -40,13 +40,18 @@ const getPopUpById = async (req, res) => {
     if (!popup)
         throw new Errors_1.NotFound("Popup not found");
     const pages = await db_1.db
-        .select()
+        .select({
+        pageId: schema_1.popUpsPages.pageId,
+        imageId: schema_1.popUpsPages.imageId,
+        pageName: schema_1.appPages.name,
+    })
         .from(schema_1.popUpsPages)
-        .where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id));
+        .where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id))
+        .leftJoin(schema_1.appPages, (0, drizzle_orm_1.eq)(schema_1.appPages.id, schema_1.popUpsPages.pageId));
     (0, response_1.SuccessResponse)(res, {
         popup: {
             ...popup,
-            pages, // attach all related pages
+            pages, // now includes pageName for each
         },
     }, 200);
 };

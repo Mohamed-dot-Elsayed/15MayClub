@@ -52,16 +52,21 @@ export const getPopUpById = async (req: Request, res: Response) => {
   if (!popup) throw new NotFound("Popup not found");
 
   const pages = await db
-    .select()
+    .select({
+      pageId: popUpsPages.pageId,
+      imageId: popUpsPages.imageId,
+      pageName: appPages.name,
+    })
     .from(popUpsPages)
-    .where(eq(popUpsPages.imageId, id));
+    .where(eq(popUpsPages.imageId, id))
+    .leftJoin(appPages, eq(appPages.id, popUpsPages.pageId));
 
   SuccessResponse(
     res,
     {
       popup: {
         ...popup,
-        pages, // attach all related pages
+        pages, // now includes pageName for each
       },
     },
     200
