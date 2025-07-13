@@ -25,6 +25,7 @@ export const getAllVotes = async (req: Request, res: Response) => {
 
     if (!grouped[vote.id]) {
       grouped[vote.id] = {
+        id: vote.id,
         name: vote.name,
         maxSelections: vote.maxSelections,
         options: [],

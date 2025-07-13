@@ -18,6 +18,7 @@ const getAllVotes = async (req, res) => {
         const item = row.votes_items;
         if (!grouped[vote.id]) {
             grouped[vote.id] = {
+                id: vote.id,
                 name: vote.name,
                 maxSelections: vote.maxSelections,
                 options: [],
