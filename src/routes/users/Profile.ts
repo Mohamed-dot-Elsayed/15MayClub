@@ -5,11 +5,7 @@ import { validate } from "../../middlewares/validation";
 import { updateUserProfileSchema } from "../../validators/users/profile";
 const route = Router();
 
-route.get("/profile", catchAsync(getProfile));
-route.post(
-  "/profile",
-  validate(updateUserProfileSchema),
-  catchAsync(updateProfile)
-);
+route.get("/", catchAsync(getProfile));
+route.post("/", validate(updateUserProfileSchema), catchAsync(updateProfile));
 
 export default route;
