@@ -6,6 +6,6 @@ import { updateUserProfileSchema } from "../../validators/users/profile";
 const route = Router();
 
 route.get("/", catchAsync(getProfile));
-route.post("/", validate(updateUserProfileSchema), catchAsync(updateProfile));
+route.put("/", validate(updateUserProfileSchema), catchAsync(updateProfile));
 
 export default route;
