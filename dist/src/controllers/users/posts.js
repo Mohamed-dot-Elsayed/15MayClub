@@ -8,7 +8,7 @@ const response_1 = require("../../utils/response");
 const Errors_1 = require("../../Errors");
 const uuid_1 = require("uuid");
 const CATEGORY_IDS = {
-    social: "779a5031-60b3-11f0-908d-0050564dafeb",
+    social: "63b99a53-60b3-11f0-908d-0050564dafeb",
     sport: "63b9af5e-60b3-11f0-908d-0050564dafeb",
     cultural: "779a5031-60b3-11f0-908d-0050564dafeb", // looks same as social? Check if typo
 };
