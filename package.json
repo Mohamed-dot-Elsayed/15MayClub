@@ -23,6 +23,7 @@
     "drizzle-orm": "^0.44.2",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
+    "helmet": "^8.1.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.0",
@@ -34,12 +35,12 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/cookie-parser": "^1.4.9",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.0.10",
-    "@types/cookie-parser": "^1.4.9",
-    "@types/cors": "^2.8.19",
     "@types/nodemailer": "^6.4.17",
     "drizzle-kit": "^0.31.4",
     "ts-node-dev": "^2.0.0"

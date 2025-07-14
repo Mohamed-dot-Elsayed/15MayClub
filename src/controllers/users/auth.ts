@@ -17,7 +17,7 @@ import { generateToken } from "../../utils/auth";
 import { sendEmail } from "../../utils/sendEmails";
 import { BadRequest } from "../../Errors/BadRequest";
 
-export async function signup(req: Request, res: Response) {
+export const signup = async (req: Request, res: Response) => {
   const data = req.body;
 
   const [existing] = await db
@@ -87,7 +87,7 @@ export async function signup(req: Request, res: Response) {
     },
     201
   );
-}
+};
 
 export const verifyEmail = async (req: Request, res: Response) => {
   const { userId, code } = req.body;
@@ -113,7 +113,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
   res.json({ message: "Email verified successfully" });
 };
 
-export async function login(req: Request, res: Response) {
+export const login = async (req: Request, res: Response) => {
   const data = req.body;
 
   const user = await db.query.users.findFirst({
@@ -147,7 +147,7 @@ export async function login(req: Request, res: Response) {
   });
 
   SuccessResponse(res, { message: "login Successful", tokne: token }, 200);
-}
+};
 
 export const getFcmToken = async (req: Request, res: Response) => {
   const { token } = req.body;

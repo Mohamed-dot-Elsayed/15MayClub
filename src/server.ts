@@ -6,14 +6,16 @@ import { NotFound } from "./Errors";
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import "./utils/birthDateCron";
 dotenv.config();
 
 const app = express();
+app.use(helmet());
 app.use(cors({ origin: "*" }));
 app.use(cookieParser());
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true, limit: "2mb" }));
+app.use(express.json({ limit: "20mb" }));
+app.use(express.urlencoded({ extended: true, limit: "20mb" }));
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.get("/api/test", (req, res, next) => {
   res.json({ message: "API is working! notify token" });

@@ -3,9 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resetPassword = exports.verifyCode = exports.sendResetCode = exports.getFcmToken = exports.verifyEmail = void 0;
-exports.signup = signup;
-exports.login = login;
+exports.resetPassword = exports.verifyCode = exports.sendResetCode = exports.getFcmToken = exports.login = exports.verifyEmail = exports.signup = void 0;
 const handleImages_1 = require("../../utils/handleImages");
 const db_1 = require("../../models/db");
 const schema_1 = require("../../models/schema");
@@ -18,7 +16,7 @@ const Errors_1 = require("../../Errors");
 const auth_1 = require("../../utils/auth");
 const sendEmails_1 = require("../../utils/sendEmails");
 const BadRequest_1 = require("../../Errors/BadRequest");
-async function signup(req, res) {
+const signup = async (req, res) => {
     const data = req.body;
     const [existing] = await db_1.db
         .select()
@@ -67,7 +65,8 @@ async function signup(req, res) {
         message: "User Signup successfully get verification code from gmail",
         userId: userId,
     }, 201);
-}
+};
+exports.signup = signup;
 const verifyEmail = async (req, res) => {
     const { userId, code } = req.body;
     const user = await db_1.db.query.users.findFirst({
@@ -87,7 +86,7 @@ const verifyEmail = async (req, res) => {
     res.json({ message: "Email verified successfully" });
 };
 exports.verifyEmail = verifyEmail;
-async function login(req, res) {
+const login = async (req, res) => {
     const data = req.body;
     const user = await db_1.db.query.users.findFirst({
         where: (0, drizzle_orm_1.eq)(schema_1.users.email, data.email),
@@ -111,7 +110,8 @@ async function login(req, res) {
         role: user.role === "member" ? "approved_member_user" : "approved_guest_user",
     });
     (0, response_1.SuccessResponse)(res, { message: "login Successful", tokne: token }, 200);
-}
+};
+exports.login = login;
 const getFcmToken = async (req, res) => {
     const { token } = req.body;
     const userId = req.user.id;
