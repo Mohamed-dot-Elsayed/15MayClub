@@ -6,11 +6,26 @@ import { SuccessResponse } from "../../utils/response";
 import { NotFound } from "../../Errors";
 import { v4 as uuidv4 } from "uuid";
 
-export const getPosts = async (req: Request, res: Response) => {
+const CATEGORY_IDS = {
+  social: "779a5031-60b3-11f0-908d-0050564dafeb",
+  sport: "63b9af5e-60b3-11f0-908d-0050564dafeb",
+  cultural: "779a5031-60b3-11f0-908d-0050564dafeb", // looks same as social? Check if typo
+};
+
+export const getPostsByCategory = async (req: Request, res: Response) => {
+  const { type } = req.params;
+
+  const categoryId = CATEGORY_IDS[type as keyof typeof CATEGORY_IDS];
+  if (!categoryId) {
+    throw new NotFound("Category Not Found");
+  }
+
   const postsList = await db
     .select()
     .from(posts)
+    .where(eq(posts.categoryId, categoryId))
     .leftJoin(postsImages, eq(posts.id, postsImages.postId));
+
   SuccessResponse(res, { posts: postsList }, 200);
 };
 
