@@ -7,9 +7,7 @@ import {
 import { catchAsync } from "../../utils/catchAsync";
 const router = Router();
 router.get("/:type", catchAsync(getPostsByCategory));
-router
-  .route("/:id")
-  .post(catchAsync(reactPost))
-  .get(catchAsync(getPostWithReacts));
+router.post("/:id", catchAsync(reactPost));
+router.get("/:id/info", catchAsync(getPostWithReacts));
 
 export default router;
