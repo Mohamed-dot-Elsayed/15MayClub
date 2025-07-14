@@ -46,15 +46,38 @@ export const reactPost = async (req: Request, res: Response) => {
   SuccessResponse(res, { messafe: "User Liked Success" }, 200);
 };
 
-export const getPostReacts = async (req: Request, res: Response) => {
+export const getPostWithReacts = async (req: Request, res: Response) => {
   const postId = req.params.id;
-  const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+  const userId = req.user!.id;
+  const [post] = await db
+    .select()
+    .from(posts)
+    .where(eq(posts.id, postId))
+    .leftJoin(postsImages, eq(posts.id, postsImages.postId));
+
   if (!post) throw new NotFound("Post not found");
+
   const [{ count }] = await db
     .select({ count: sql<number>`count(*)` })
     .from(reacts)
     .where(eq(reacts.postId, postId));
 
-  const reactsCount = count;
-  SuccessResponse(res, { reactsCount: reactsCount }, 200);
+  let reacted = false;
+  if (userId) {
+    const [userReact] = await db
+      .select()
+      .from(reacts)
+      .where(and(eq(reacts.postId, postId), eq(reacts.userId, userId)));
+
+    reacted = !!userReact;
+    SuccessResponse(
+      res,
+      {
+        post,
+        reactsCount: count,
+        reacted,
+      },
+      200
+    );
+  }
 };

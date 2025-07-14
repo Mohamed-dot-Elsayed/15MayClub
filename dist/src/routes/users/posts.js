@@ -5,5 +5,8 @@ const posts_1 = require("../../controllers/users/posts");
 const catchAsync_1 = require("../../utils/catchAsync");
 const router = (0, express_1.Router)();
 router.get("/:type", (0, catchAsync_1.catchAsync)(posts_1.getPostsByCategory));
-router.route("/:id").post((0, catchAsync_1.catchAsync)(posts_1.reactPost)).get((0, catchAsync_1.catchAsync)(posts_1.getPostReacts));
+router
+    .route("/:id")
+    .post((0, catchAsync_1.catchAsync)(posts_1.reactPost))
+    .get((0, catchAsync_1.catchAsync)(posts_1.getPostWithReacts));
 exports.default = router;
