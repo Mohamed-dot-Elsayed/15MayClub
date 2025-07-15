@@ -11,7 +11,11 @@ import "./utils/birthDateCron";
 dotenv.config();
 
 const app = express();
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(cors({ origin: "*" }));
 app.use(cookieParser());
 app.use(express.json({ limit: "20mb" }));

@@ -15,7 +15,9 @@ const helmet_1 = __importDefault(require("helmet"));
 require("./utils/birthDateCron");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: false,
+}));
 app.use((0, cors_1.default)({ origin: "*" }));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json({ limit: "20mb" }));
