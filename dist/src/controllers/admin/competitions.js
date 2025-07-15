@@ -160,12 +160,19 @@ exports.updateCompetitionImages = updateCompetitionImages;
 const removeCompetitionUser = async (req, res) => {
     const id = req.params.id;
     const userId = req.params.userId;
-    const [competitionExists] = await db_1.db
+    const [competition] = await db_1.db
+        .select()
+        .from(schema_1.competitions)
+        .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+    if (!competition)
+        throw new Errors_1.NotFound("Competition not found");
+    // Check if user is registered
+    const [userInComp] = await db_1.db
         .select()
         .from(schema_1.userCompetition)
         .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id), (0, drizzle_orm_1.eq)(schema_1.userCompetition.userId, userId)));
-    if (!competitionExists)
-        throw new Errors_1.NotFound("Competition not found or user not registered in competition");
+    if (!userInComp)
+        throw new Errors_1.NotFound("User not registered in this competition");
     await db_1.db
         .delete(schema_1.userCompetition)
         .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id), (0, drizzle_orm_1.eq)(schema_1.userCompetition.userId, userId)));

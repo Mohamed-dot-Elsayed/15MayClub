@@ -190,7 +190,15 @@ export const updateCompetitionImages = async (
 export const removeCompetitionUser = async (req: Request, res: Response) => {
   const id = req.params.id;
   const userId = req.params.userId;
-  const [competitionExists] = await db
+  const [competition] = await db
+    .select()
+    .from(competitions)
+    .where(eq(competitions.id, id));
+
+  if (!competition) throw new NotFound("Competition not found");
+
+  // Check if user is registered
+  const [userInComp] = await db
     .select()
     .from(userCompetition)
     .where(
@@ -199,10 +207,9 @@ export const removeCompetitionUser = async (req: Request, res: Response) => {
         eq(userCompetition.userId, userId)
       )
     );
-  if (!competitionExists)
-    throw new NotFound(
-      "Competition not found or user not registered in competition"
-    );
+
+  if (!userInComp)
+    throw new NotFound("User not registered in this competition");
   await db
     .delete(userCompetition)
     .where(
