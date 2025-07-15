@@ -153,14 +153,34 @@ const updateCompetition = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
-    const data = req.body;
-    if (data.mainImagepath)
-        data.mainImagepath = await (0, handleImages_1.saveBase64Image)(data.mainImagepath, id, req, "competitionsMain");
-    if (data.startDate)
-        data.startDate = new Date(new Date(data.startDate).getTime() + 3 * 60 * 60 * 1000);
-    if (data.endDate)
-        data.endDate = new Date(new Date(data.endDate).getTime() + 3 * 60 * 60 * 1000);
-    await db_1.db.update(schema_1.competitions).set(data).where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+    let { name, description, mainImagepath, startDate, endDate, images } = req.body;
+    if (mainImagepath)
+        mainImagepath = await (0, handleImages_1.saveBase64Image)(mainImagepath, id, req, "competitionsMain");
+    if (startDate)
+        startDate = new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000);
+    if (endDate)
+        endDate = new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000);
+    if (images !== undefined && Object.keys(images).length > 0) {
+        const competitionImagesd = await db_1.db
+            .select()
+            .from(schema_1.competitionsImages)
+            .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
+        competitionImagesd.forEach(async (image) => {
+            await (0, deleteImage_1.deletePhotoFromServer)(new URL(image.id).pathname);
+        });
+        images.forEach(async (imagePath) => {
+            const imageId = (0, uuid_1.v4)();
+            await db_1.db.insert(schema_1.competitionsImages).values({
+                id: imageId,
+                competitionId: id,
+                imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "competitionsImages"),
+            });
+        });
+    }
+    await db_1.db
+        .update(schema_1.competitions)
+        .set({ name, description, startDate, endDate, mainImagepath })
+        .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     (0, response_1.SuccessResponse)(res, { message: "Competition updated successfully" }, 200);
 };
 exports.updateCompetition = updateCompetition;
