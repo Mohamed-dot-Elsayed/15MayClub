@@ -44,6 +44,10 @@ const getRejectUser = async (req, res) => {
         .from(schema_1.users)
         .where((0, drizzle_orm_1.eq)(schema_1.users.status, "rejected"))
         .orderBy(schema_1.users.updatedAt);
-    (0, response_1.SuccessResponse)(res, { users: userRej }, 200);
+    const formattedUsers = userRej.map((user) => ({
+        ...user,
+        rejectDate: user.rejectDate?.toISOString().split("T")[0], // Format: YYYY-MM-DD
+    }));
+    (0, response_1.SuccessResponse)(res, { users: formattedUsers }, 200);
 };
 exports.getRejectUser = getRejectUser;

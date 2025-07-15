@@ -54,5 +54,11 @@ export const getRejectUser = async (req: Request, res: Response) => {
     .from(users)
     .where(eq(users.status, "rejected"))
     .orderBy(users.updatedAt);
-  SuccessResponse(res, { users: userRej }, 200);
+
+  const formattedUsers = userRej.map((user) => ({
+    ...user,
+    rejectDate: user.rejectDate?.toISOString().split("T")[0], // Format: YYYY-MM-DD
+  }));
+
+  SuccessResponse(res, { users: formattedUsers }, 200);
 };
