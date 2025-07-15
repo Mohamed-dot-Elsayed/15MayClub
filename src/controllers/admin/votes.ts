@@ -10,6 +10,7 @@ import { SuccessResponse } from "../../utils/response";
 import { v4 as uuidv4 } from "uuid";
 import { eq, inArray } from "drizzle-orm";
 import { NotFound } from "../../Errors";
+import { sql } from "drizzle-orm";
 
 export const getAllVotes = async (req: Request, res: Response) => {
   const data = await db
@@ -28,8 +29,10 @@ export const getAllVotes = async (req: Request, res: Response) => {
         id: vote.id,
         name: vote.name,
         maxSelections: vote.maxSelections,
-
+        startDate: vote.startDate,
+        endDate: vote.endDate,
         options: [],
+        votesCount: 0,
       };
     }
 
@@ -38,6 +41,11 @@ export const getAllVotes = async (req: Request, res: Response) => {
         id: item.id,
         text: item.item, // or item.text, depending on your field name
       });
+      const [{ votesCount }] = await db
+        .select({ votesCount: sql<number>`COUNT(*)` })
+        .from(userVotes)
+        .where(eq(userVotes.voteId, vote.id));
+      grouped[vote.id].votesCount = votesCount;
     }
   }
 

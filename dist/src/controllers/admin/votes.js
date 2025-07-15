@@ -7,6 +7,7 @@ const response_1 = require("../../utils/response");
 const uuid_1 = require("uuid");
 const drizzle_orm_1 = require("drizzle-orm");
 const Errors_1 = require("../../Errors");
+const drizzle_orm_2 = require("drizzle-orm");
 const getAllVotes = async (req, res) => {
     const data = await db_1.db
         .select()
@@ -21,7 +22,10 @@ const getAllVotes = async (req, res) => {
                 id: vote.id,
                 name: vote.name,
                 maxSelections: vote.maxSelections,
+                startDate: vote.startDate,
+                endDate: vote.endDate,
                 options: [],
+                votesCount: 0,
             };
         }
         if (item) {
@@ -29,6 +33,11 @@ const getAllVotes = async (req, res) => {
                 id: item.id,
                 text: item.item, // or item.text, depending on your field name
             });
+            const [{ votesCount }] = await db_1.db
+                .select({ votesCount: (0, drizzle_orm_2.sql) `COUNT(*)` })
+                .from(schema_1.userVotes)
+                .where((0, drizzle_orm_1.eq)(schema_1.userVotes.voteId, vote.id));
+            grouped[vote.id].votesCount = votesCount;
         }
     }
     const result = Object.values(grouped);

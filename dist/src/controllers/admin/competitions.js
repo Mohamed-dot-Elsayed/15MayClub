@@ -28,17 +28,21 @@ const getCompetition = async (req, res) => {
     const [data] = await db_1.db
         .select()
         .from(schema_1.competitions)
-        .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+        .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id))
+        .leftJoin(schema_1.competitionsImages, (0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
     if (!data)
         throw new Errors_1.NotFound("Competition not found");
     const formatted = {
         ...data,
-        startDate: data.startDate
-            ? new Date(data.startDate).toISOString().slice(0, 10)
-            : null,
-        endDate: data.endDate
-            ? new Date(data.endDate).toISOString().slice(0, 10)
-            : null,
+        competitions: {
+            ...data.competitions,
+            startDate: data.competitions?.startDate
+                ? new Date(data.competitions.startDate).toISOString().slice(0, 10)
+                : null,
+            endDate: data.competitions?.endDate
+                ? new Date(data.competitions.endDate).toISOString().slice(0, 10)
+                : null,
+        },
     };
     (0, response_1.SuccessResponse)(res, { competition: formatted }, 200);
 };
@@ -57,10 +61,11 @@ const createCompetition = async (req, res) => {
         });
         if (images !== undefined && Object.keys(images).length > 0) {
             images.forEach(async (imagePath) => {
+                const imageId = (0, uuid_1.v4)();
                 await tx.insert(schema_1.competitionsImages).values({
-                    id: (0, uuid_1.v4)(),
+                    id: imageId,
                     competitionId: id,
-                    imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, id, req, "competitionsImages"),
+                    imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "competitionsImages"),
                 });
             });
         }

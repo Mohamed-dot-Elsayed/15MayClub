@@ -33,18 +33,22 @@ export const getCompetition = async (req: Request, res: Response) => {
   const [data] = await db
     .select()
     .from(competitions)
-    .where(eq(competitions.id, id));
+    .where(eq(competitions.id, id))
+    .leftJoin(competitionsImages, eq(competitionsImages.competitionId, id));
 
   if (!data) throw new NotFound("Competition not found");
 
   const formatted = {
     ...data,
-    startDate: data.startDate
-      ? new Date(data.startDate).toISOString().slice(0, 10)
-      : null,
-    endDate: data.endDate
-      ? new Date(data.endDate).toISOString().slice(0, 10)
-      : null,
+    competitions: {
+      ...data.competitions,
+      startDate: data.competitions?.startDate
+        ? new Date(data.competitions.startDate).toISOString().slice(0, 10)
+        : null,
+      endDate: data.competitions?.endDate
+        ? new Date(data.competitions.endDate).toISOString().slice(0, 10)
+        : null,
+    },
   };
 
   SuccessResponse(res, { competition: formatted }, 200);
@@ -70,12 +74,13 @@ export const createCompetition = async (req: Request, res: Response) => {
     });
     if (images !== undefined && Object.keys(images).length > 0) {
       images.forEach(async (imagePath: any) => {
+        const imageId = uuid4v();
         await tx.insert(competitionsImages).values({
-          id: uuid4v(),
+          id: imageId,
           competitionId: id,
           imagePath: await saveBase64Image(
             imagePath,
-            id,
+            imageId,
             req,
             "competitionsImages"
           ),
