@@ -65,6 +65,7 @@ export const getPopUpById = async (req: Request, res: Response) => {
   const pages = await db
     .select({
       pageName: appPages.name,
+      pageId: appPages.id,
     })
     .from(popUpsPages)
     .where(eq(popUpsPages.imageId, id))

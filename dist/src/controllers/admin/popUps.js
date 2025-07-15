@@ -51,6 +51,7 @@ const getPopUpById = async (req, res) => {
     const pages = await db_1.db
         .select({
         pageName: schema_1.appPages.name,
+        pageId: schema_1.appPages.id,
     })
         .from(schema_1.popUpsPages)
         .where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id))
