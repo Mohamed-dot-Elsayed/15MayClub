@@ -80,7 +80,11 @@ const getCompetitionUsers = async (req, res) => {
         .select()
         .from(schema_1.userCompetition)
         .where((0, drizzle_orm_1.eq)(schema_1.userCompetition.competitionId, id));
-    (0, response_1.SuccessResponse)(res, { users: data }, 200);
+    const formatted = data.map((item) => ({
+        ...item,
+        dateOfBirth: item.dateOfBirth.toISOString().split("T")[0],
+    }));
+    (0, response_1.SuccessResponse)(res, { users: formatted }, 200);
 };
 exports.getCompetitionUsers = getCompetitionUsers;
 const getCompetitionImages = async (req, res) => {

@@ -97,7 +97,13 @@ export const getCompetitionUsers = async (req: Request, res: Response) => {
     .select()
     .from(userCompetition)
     .where(eq(userCompetition.competitionId, id));
-  SuccessResponse(res, { users: data }, 200);
+
+  const formatted = data.map((item) => ({
+    ...item,
+    dateOfBirth: item.dateOfBirth.toISOString().split("T")[0],
+  }));
+
+  SuccessResponse(res, { users: formatted }, 200);
 };
 
 export const getCompetitionImages = async (req: Request, res: Response) => {
