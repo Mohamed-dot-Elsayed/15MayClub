@@ -13,6 +13,8 @@ const bcrypt_1 = __importDefault(require("bcrypt"));
 const getProfileData = async (req, res) => {
     const userId = req.user.id;
     const [data] = await db_1.db.select().from(schema_1.admins).where((0, drizzle_orm_1.eq)(schema_1.admins.id, userId));
+    if (!data)
+        throw new Errors_1.NotFound("not found " + userId);
     (0, response_1.SuccessResponse)(res, data, 200);
 };
 exports.getProfileData = getProfileData;
