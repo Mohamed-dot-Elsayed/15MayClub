@@ -124,7 +124,6 @@ export const deleteCompetition = async (req: Request, res: Response) => {
     .from(competitions)
     .where(eq(competitions.id, id));
   if (!competitionExists) throw new NotFound("Competition not found");
-  //http://app.15may.club/uploads/competitionsImages/53fe716b-3db0-48b9-8c0e-2814045e7d08.jpeg
   const deleted = await deletePhotoFromServer(
     new URL(competitionExists.mainImagepath).pathname
   );
@@ -137,9 +136,11 @@ export const deleteCompetition = async (req: Request, res: Response) => {
       .where(eq(competitionsImages.competitionId, id));
     if (images && images.length > 0) {
       images.forEach(async (img) => {
-        const deleted = await deletePhotoFromServer(img.imagePath);
+        const deleted = await deletePhotoFromServer(
+          new URL(img.imagePath).pathname
+        );
         if (!deleted)
-          throw new ConflictError("Failed to delete post image from server");
+          throw new ConflictError("Failed to delete inner image from server");
       });
       await tx
         .delete(competitionsImages)

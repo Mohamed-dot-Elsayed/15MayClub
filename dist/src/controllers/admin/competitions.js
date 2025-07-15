@@ -109,7 +109,6 @@ const deleteCompetition = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
-    //http://app.15may.club/uploads/competitionsImages/53fe716b-3db0-48b9-8c0e-2814045e7d08.jpeg
     const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(competitionExists.mainImagepath).pathname);
     if (!deleted)
         throw new Errors_1.ConflictError("Failed to delete main image from server");
@@ -120,9 +119,9 @@ const deleteCompetition = async (req, res) => {
             .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
         if (images && images.length > 0) {
             images.forEach(async (img) => {
-                const deleted = await (0, deleteImage_1.deletePhotoFromServer)(img.imagePath);
+                const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
                 if (!deleted)
-                    throw new Errors_1.ConflictError("Failed to delete post image from server");
+                    throw new Errors_1.ConflictError("Failed to delete inner image from server");
             });
             await tx
                 .delete(schema_1.competitionsImages)
