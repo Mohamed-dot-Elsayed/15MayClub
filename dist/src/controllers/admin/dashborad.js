@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRejectUser = exports.getHeader = void 0;
+exports.complaintsCategories = exports.getRejectUser = exports.getHeader = void 0;
 const db_1 = require("../../models/db");
 const drizzle_orm_1 = require("drizzle-orm");
 const schema_1 = require("../../models/schema");
@@ -51,3 +51,15 @@ const getRejectUser = async (req, res) => {
     (0, response_1.SuccessResponse)(res, { users: formattedUsers }, 200);
 };
 exports.getRejectUser = getRejectUser;
+const complaintsCategories = async (req, res) => {
+    const complaintStats = await db_1.db
+        .select({
+        name: schema_1.complaintsCategory.name,
+        percent: (0, drizzle_orm_1.sql) `ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ${schema_1.complaints}), 2)`,
+    })
+        .from(schema_1.complaints)
+        .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id))
+        .groupBy(schema_1.complaintsCategory.name);
+    (0, response_1.SuccessResponse)(res, { complaintStats }, 200);
+};
+exports.complaintsCategories = complaintsCategories;

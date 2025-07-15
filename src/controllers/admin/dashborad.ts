@@ -4,6 +4,7 @@ import { eq, sql } from "drizzle-orm";
 import {
   competitions,
   complaints,
+  complaintsCategory,
   popUpsImages,
   posts,
   users,
@@ -61,4 +62,19 @@ export const getRejectUser = async (req: Request, res: Response) => {
   }));
 
   SuccessResponse(res, { users: formattedUsers }, 200);
+};
+
+export const complaintsCategories = async (req: Request, res: Response) => {
+  const complaintStats = await db
+    .select({
+      name: complaintsCategory.name,
+      percent: sql<number>`ROUND(COUNT(*) * 100 / (SELECT COUNT(*) FROM ${complaints}), 2)`,
+    })
+    .from(complaints)
+    .leftJoin(
+      complaintsCategory,
+      eq(complaints.categoryId, complaintsCategory.id)
+    )
+    .groupBy(complaintsCategory.name);
+  SuccessResponse(res, { complaintStats }, 200);
 };
