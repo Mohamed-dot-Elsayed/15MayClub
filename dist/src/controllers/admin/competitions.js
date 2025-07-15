@@ -109,7 +109,8 @@ const deleteCompetition = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
-    const deleted = await (0, deleteImage_1.deletePhotoFromServer)(competitionExists.mainImagepath);
+    //http://app.15may.club/uploads/competitionsImages/53fe716b-3db0-48b9-8c0e-2814045e7d08.jpeg
+    const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(competitionExists.mainImagepath).pathname);
     if (!deleted)
         throw new Errors_1.ConflictError("Failed to delete main image from server");
     await db_1.db.transaction(async (tx) => {

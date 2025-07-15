@@ -124,7 +124,10 @@ export const deleteCompetition = async (req: Request, res: Response) => {
     .from(competitions)
     .where(eq(competitions.id, id));
   if (!competitionExists) throw new NotFound("Competition not found");
-  const deleted = await deletePhotoFromServer(competitionExists.mainImagepath);
+  //http://app.15may.club/uploads/competitionsImages/53fe716b-3db0-48b9-8c0e-2814045e7d08.jpeg
+  const deleted = await deletePhotoFromServer(
+    new URL(competitionExists.mainImagepath).pathname
+  );
   if (!deleted)
     throw new ConflictError("Failed to delete main image from server");
   await db.transaction(async (tx) => {
