@@ -94,7 +94,7 @@ const deleteSlider = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, id));
     for (const image of images) {
         if (image.image_path) {
-            await (0, deleteImage_1.deletePhotoFromServer)(image.image_path); // or check return value
+            await (0, deleteImage_1.deletePhotoFromServer)(new URL(image.image_path).pathname); // or check return value
         }
     }
     await db_1.db.delete(schema_1.sliders).where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id));

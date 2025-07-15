@@ -128,7 +128,9 @@ export const updatePost = async (req: Request, res: Response) => {
       .from(postsImages)
       .where(eq(postsImages.postId, postId));
     imagess.forEach(async (img) => {
-      const deleted = await deletePhotoFromServer(img.imagePath);
+      const deleted = await deletePhotoFromServer(
+        new URL(img.imagePath).pathname
+      );
       if (!deleted)
         throw new ConflictError("Failed to delete post image from server");
     });
@@ -166,7 +168,9 @@ export const deletePost = async (req: Request, res: Response) => {
     .where(eq(postsImages.postId, postId));
   if (images && images.length > 0) {
     images.forEach(async (img) => {
-      const deleted = await deletePhotoFromServer(img.imagePath);
+      const deleted = await deletePhotoFromServer(
+        new URL(img.imagePath).pathname
+      );
       if (!deleted)
         throw new ConflictError("Failed to delete post image from server");
     });

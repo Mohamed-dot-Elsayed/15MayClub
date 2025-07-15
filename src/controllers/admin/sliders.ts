@@ -107,7 +107,7 @@ export const deleteSlider = async (req: Request, res: Response) => {
 
   for (const image of images) {
     if (image.image_path) {
-      await deletePhotoFromServer(image.image_path); // or check return value
+      await deletePhotoFromServer(new URL(image.image_path).pathname); // or check return value
     }
   }
   await db.delete(sliders).where(eq(sliders.id, id));

@@ -118,7 +118,7 @@ const updatePost = async (req, res) => {
             .from(schema_1.postsImages)
             .where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
         imagess.forEach(async (img) => {
-            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(img.imagePath);
+            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
             if (!deleted)
                 throw new Errors_1.ConflictError("Failed to delete post image from server");
         });
@@ -153,7 +153,7 @@ const deletePost = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
     if (images && images.length > 0) {
         images.forEach(async (img) => {
-            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(img.imagePath);
+            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
             if (!deleted)
                 throw new Errors_1.ConflictError("Failed to delete post image from server");
         });

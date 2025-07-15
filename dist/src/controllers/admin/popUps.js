@@ -100,7 +100,7 @@ const deletePopUp = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
     if (!popup)
         throw new Errors_1.NotFound("Popup not found");
-    await (0, deleteImage_1.deletePhotoFromServer)(popup.imagePath);
+    await (0, deleteImage_1.deletePhotoFromServer)(new URL(popup.imagePath).pathname);
     await db_1.db.transaction(async (tx) => {
         await tx.delete(schema_1.popUpsImages).where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
     });

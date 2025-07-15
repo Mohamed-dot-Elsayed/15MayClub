@@ -74,7 +74,9 @@ export const deleteUser = async (req: Request, res: Response) => {
   const [user] = await db.select().from(users).where(eq(users.id, id));
   if (!user) throw new NotFound("User not found");
   if (user.imagePath) {
-    const deleted = await deletePhotoFromServer(user.imagePath);
+    const deleted = await deletePhotoFromServer(
+      new URL(user.imagePath).pathname
+    );
     if (!deleted)
       throw new ConflictError("Failed to delete user image from server");
   }

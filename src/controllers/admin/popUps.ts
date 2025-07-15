@@ -120,7 +120,7 @@ export const deletePopUp = async (req: Request, res: Response) => {
     .from(popUpsImages)
     .where(eq(popUpsImages.id, id));
   if (!popup) throw new NotFound("Popup not found");
-  await deletePhotoFromServer(popup.imagePath);
+  await deletePhotoFromServer(new URL(popup.imagePath).pathname);
   await db.transaction(async (tx) => {
     await tx.delete(popUpsImages).where(eq(popUpsImages.id, id));
   });

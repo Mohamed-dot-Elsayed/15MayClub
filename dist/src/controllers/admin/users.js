@@ -66,7 +66,7 @@ const deleteUser = async (req, res) => {
     if (!user)
         throw new Errors_1.NotFound("User not found");
     if (user.imagePath) {
-        const deleted = await (0, deleteImage_1.deletePhotoFromServer)(user.imagePath);
+        const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(user.imagePath).pathname);
         if (!deleted)
             throw new Errors_1.ConflictError("Failed to delete user image from server");
     }
