@@ -10,12 +10,17 @@ const deletePhotoFromServer = async (relativePath) => {
     try {
         const filePath = path_1.default.join(__dirname, "..", "..", relativePath); // Adjust depth as needed
         try {
-            await promises_1.default.access(filePath); // Check if file exists
+            await promises_1.default.access(filePath);
         }
         catch {
-            return false; // File not found
+            return false;
         }
-        await promises_1.default.unlink(filePath); // Delete file
+        try {
+            await promises_1.default.unlink(filePath);
+        }
+        catch (err) {
+            throw new Error("can't remove");
+        }
         return true;
     }
     catch (err) {

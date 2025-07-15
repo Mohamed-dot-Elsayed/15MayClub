@@ -8,12 +8,15 @@ export const deletePhotoFromServer = async (
     const filePath = path.join(__dirname, "..", "..", relativePath); // Adjust depth as needed
 
     try {
-      await fs.access(filePath); // Check if file exists
+      await fs.access(filePath);
     } catch {
-      return false; // File not found
+      return false;
     }
-
-    await fs.unlink(filePath); // Delete file
+    try {
+      await fs.unlink(filePath);
+    } catch (err) {
+      throw new Error("can't remove");
+    }
     return true;
   } catch (err) {
     console.error("Error deleting photo:", err);
