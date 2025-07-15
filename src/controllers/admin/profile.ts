@@ -8,7 +8,7 @@ import bcrypt from "bcrypt";
 
 export const getProfileData = async (req: Request, res: Response) => {
   const userId = req.user!.id;
-  const data = await db.select().from(admins).where(eq(admins.id, userId));
+  const [data] = await db.select().from(admins).where(eq(admins.id, userId));
   SuccessResponse(res, data, 200);
 };
 
