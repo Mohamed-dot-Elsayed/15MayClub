@@ -158,7 +158,7 @@ export const updateOption = async (req: Request, res: Response) => {
     .from(votesItems)
     .where(eq(votesItems.id, id));
   if (!itemV) throw new NotFound("option not found");
-  await db.update(votesItems).set(item);
+  await db.update(votesItems).set(item).where(eq(votesItems.id, id));
   SuccessResponse(res, { message: "Option Updated Successfully" }, 200);
 };
 

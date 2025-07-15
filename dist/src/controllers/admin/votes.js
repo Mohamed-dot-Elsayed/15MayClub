@@ -146,7 +146,7 @@ const updateOption = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, id));
     if (!itemV)
         throw new Errors_1.NotFound("option not found");
-    await db_1.db.update(schema_1.votesItems).set(item);
+    await db_1.db.update(schema_1.votesItems).set(item).where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, id));
     (0, response_1.SuccessResponse)(res, { message: "Option Updated Successfully" }, 200);
 };
 exports.updateOption = updateOption;
