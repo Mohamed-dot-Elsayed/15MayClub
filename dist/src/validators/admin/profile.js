@@ -6,7 +6,10 @@ exports.updateProfileSchema = zod_1.z.object({
     body: zod_1.z.object({
         name: zod_1.z.string().optional(),
         phoneNumber: zod_1.z.string().optional(),
-        email: zod_1.z.string().email("invalid email"),
-        password: zod_1.z.string().min(8, "Password must be at least 8 characters"),
+        email: zod_1.z.string().email("invalid email").optional(),
+        password: zod_1.z
+            .string()
+            .min(8, "Password must be at least 8 characters")
+            .optional(),
     }),
 });
