@@ -6,4 +6,5 @@ const dashborad_1 = require("../../controllers/admin/dashborad");
 const router = (0, express_1.Router)();
 router.get("/header", (0, catchAsync_1.catchAsync)(dashborad_1.getHeader));
 router.get("/rejectUsers", (0, catchAsync_1.catchAsync)(dashborad_1.getRejectUser));
+router.get("/complaints-analysis", (0, catchAsync_1.catchAsync)(dashborad_1.complaintsCategories));
 exports.default = router;
