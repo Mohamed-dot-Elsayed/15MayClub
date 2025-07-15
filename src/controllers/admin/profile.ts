@@ -19,5 +19,6 @@ export const updateProfile = async (req: Request, res: Response) => {
   const [data] = await db.select().from(admins).where(eq(admins.id, userId));
   if (!data) throw new NotFound("user not found");
   newData.hashedPassword = await bcrypt.hash(newData.password, 10);
+  await db.update(admins).set(data).where(eq(admins.id, userId));
   SuccessResponse(res, data, 200);
 };
