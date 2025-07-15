@@ -1,6 +1,7 @@
 import { authenticated } from "../../middlewares/authenticated";
 import { authorizeRoles } from "../../middlewares/authorized";
 import PostsRoute from "./posts";
+import ProfileRoute from "./profile";
 import SlidersRoute from "./sliders";
 import PopUpsRoute from "./popUps";
 import CompetitionRoute from "./competitions";
@@ -14,6 +15,7 @@ import { Router } from "express";
 const route = Router();
 route.use("/auth", AuthRoute);
 route.use(authenticated, authorizeRoles("admin"));
+route.use("/profile", ProfileRoute);
 route.use("/dashboard", DashboardRoute);
 route.use("/users", UsersAdmin);
 route.use("/votes", voteRoute);
