@@ -47,9 +47,7 @@ exports.votes = (0, mysql_core_1.mysqlTable)("votes", {
 });
 exports.votesItems = (0, mysql_core_1.mysqlTable)("votes_items", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
-    voteId: (0, mysql_core_1.varchar)("vote_id", { length: 36 })
-        .notNull()
-        .references(() => exports.votes.id),
+    voteId: (0, mysql_core_1.varchar)("vote_id", { length: 36 }).references(() => exports.votes.id),
     item: (0, mysql_core_1.varchar)("item", { length: 255 }).notNull(),
 });
 exports.userVotes = (0, mysql_core_1.mysqlTable)("user_votes", {

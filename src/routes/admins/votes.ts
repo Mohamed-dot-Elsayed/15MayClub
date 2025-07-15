@@ -7,7 +7,8 @@ import {
   updateVote,
   getAllOptions,
   getOption,
-  updateOptions,
+  createOption,
+  updateOption,
   deleteOption,
 } from "../../controllers/admin/votes";
 import { voteResult } from "../../controllers/users/votes";
@@ -26,15 +27,16 @@ router.get("/", catchAsync(getAllVotes));
 
 // Get All options, Edit and delete option
 router
-  .route("/:voteId/items")
+  .route("/items")
   .get(catchAsync(getAllOptions))
-  .put(validate(flexibleVoteItemsSchema), catchAsync(updateOptions));
+  .post(catchAsync(createOption));
 
 // Get option by id and delete option
 router
-  .route("/items/:itemId")
+  .route("/items/:id")
   .get(catchAsync(getOption))
-  .delete(catchAsync(deleteOption));
+  .delete(catchAsync(deleteOption))
+  .put(catchAsync(updateOption));
 
 // Get vote result
 router.get("/:id/result", catchAsync(voteResult));

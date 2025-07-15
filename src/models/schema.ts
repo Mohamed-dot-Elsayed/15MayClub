@@ -60,9 +60,7 @@ export const votes = mysqlTable("votes", {
 
 export const votesItems = mysqlTable("votes_items", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  voteId: varchar("vote_id", { length: 36 })
-    .notNull()
-    .references(() => votes.id),
+  voteId: varchar("vote_id", { length: 36 }).references(() => votes.id),
   item: varchar("item", { length: 255 }).notNull(),
 });
 

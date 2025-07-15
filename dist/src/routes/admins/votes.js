@@ -12,14 +12,15 @@ router.post("/", (0, validation_1.validate)(votes_3.createFullVoteSchema), (0, c
 router.get("/", (0, catchAsync_1.catchAsync)(votes_1.getAllVotes));
 // Get All options, Edit and delete option
 router
-    .route("/:voteId/items")
+    .route("/items")
     .get((0, catchAsync_1.catchAsync)(votes_1.getAllOptions))
-    .put((0, validation_1.validate)(votes_3.flexibleVoteItemsSchema), (0, catchAsync_1.catchAsync)(votes_1.updateOptions));
+    .post((0, catchAsync_1.catchAsync)(votes_1.createOption));
 // Get option by id and delete option
 router
-    .route("/items/:itemId")
+    .route("/items/:id")
     .get((0, catchAsync_1.catchAsync)(votes_1.getOption))
-    .delete((0, catchAsync_1.catchAsync)(votes_1.deleteOption));
+    .delete((0, catchAsync_1.catchAsync)(votes_1.deleteOption))
+    .put((0, catchAsync_1.catchAsync)(votes_1.updateOption));
 // Get vote result
 router.get("/:id/result", (0, catchAsync_1.catchAsync)(votes_2.voteResult));
 // Get, Edit and delete vote
