@@ -25,7 +25,7 @@ const updateProfile = async (req, res) => {
     if (!data)
         throw new Errors_1.NotFound("user not found");
     newData.hashedPassword = await bcrypt_1.default.hash(newData.password, 10);
-    await db_1.db.update(schema_1.admins).set(data).where((0, drizzle_orm_1.eq)(schema_1.admins.id, userId));
-    (0, response_1.SuccessResponse)(res, data, 200);
+    await db_1.db.update(schema_1.admins).set(newData).where((0, drizzle_orm_1.eq)(schema_1.admins.id, userId));
+    (0, response_1.SuccessResponse)(res, { message: "updated successfully" }, 200);
 };
 exports.updateProfile = updateProfile;
