@@ -22,7 +22,7 @@ export const updatePopUpSchema = z.object({
     imagePath: z.string().optional(),
     startDate: z.string().optional(),
     endDate: z.string().optional(),
-    status: z.enum(["active", "inactive"]).optional(),
+    status: z.enum(["active", "disabled"]).optional(),
     pageIds: z.array(z.string().uuid()).optional(),
   }),
 });

@@ -23,7 +23,7 @@ exports.updatePopUpSchema = zod_1.z.object({
         imagePath: zod_1.z.string().optional(),
         startDate: zod_1.z.string().optional(),
         endDate: zod_1.z.string().optional(),
-        status: zod_1.z.enum(["active", "inactive"]).optional(),
+        status: zod_1.z.enum(["active", "disabled"]).optional(),
         pageIds: zod_1.z.array(zod_1.z.string().uuid()).optional(),
     }),
 });

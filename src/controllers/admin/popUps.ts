@@ -87,7 +87,6 @@ export const getPopUpById = async (req: Request, res: Response) => {
 export const updatePopUp = async (req: Request, res: Response) => {
   const id = req.params.id;
   const data = req.body;
-
   await db.transaction(async (tx) => {
     if (Object.keys(data).length > 0) {
       const { pageIds, ...updateData } = data;
