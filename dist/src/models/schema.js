@@ -10,7 +10,7 @@ exports.popUpsStatus = ["active", "disabled"];
 exports.admins = (0, mysql_core_1.mysqlTable)("admins", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
     name: (0, mysql_core_1.varchar)("name", { length: 255 }).notNull(),
-    phoneNumber: (0, mysql_core_1.varchar)("phone_number").notNull(),
+    phoneNumber: (0, mysql_core_1.varchar)("phone_number", { length: 255 }).notNull(),
     email: (0, mysql_core_1.varchar)("email", { length: 255 }).notNull(),
     hashedPassword: (0, mysql_core_1.varchar)("hashed_password", { length: 255 }).notNull(),
 });
@@ -18,7 +18,7 @@ exports.admins = (0, mysql_core_1.mysqlTable)("admins", {
 exports.users = (0, mysql_core_1.mysqlTable)("users", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
     name: (0, mysql_core_1.varchar)("name", { length: 255 }).notNull(),
-    phoneNumber: (0, mysql_core_1.varchar)("phone_number").notNull(),
+    phoneNumber: (0, mysql_core_1.varchar)("phone_number", { length: 255 }).notNull(),
     role: (0, mysql_core_1.mysqlEnum)(exports.userRoles).notNull(),
     email: (0, mysql_core_1.varchar)("email", { length: 255 }).unique().notNull(),
     hashedPassword: (0, mysql_core_1.varchar)("hashed_password", { length: 255 }).notNull(),

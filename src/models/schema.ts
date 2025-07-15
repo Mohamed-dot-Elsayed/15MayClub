@@ -19,7 +19,7 @@ export const popUpsStatus = ["active", "disabled"] as const;
 export const admins = mysqlTable("admins", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  phoneNumber: varchar("phone_number").notNull(),
+  phoneNumber: varchar("phone_number", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
   hashedPassword: varchar("hashed_password", { length: 255 }).notNull(),
 });
@@ -28,7 +28,7 @@ export const admins = mysqlTable("admins", {
 export const users = mysqlTable("users", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
-  phoneNumber: varchar("phone_number").notNull(),
+  phoneNumber: varchar("phone_number", { length: 255 }).notNull(),
   role: mysqlEnum(userRoles).notNull(),
   email: varchar("email", { length: 255 }).unique().notNull(),
   hashedPassword: varchar("hashed_password", { length: 255 }).notNull(),
