@@ -78,7 +78,7 @@ export const createVote = async (req: Request, res: Response) => {
             .set({
               voteId: voteId,
             })
-            .where(eq(votesItems.id, item.id));
+            .where(eq(votesItems.id, item));
         });
       }
     }
@@ -109,7 +109,7 @@ export const updateVote = async (req: Request, res: Response) => {
             .set({
               voteId: id,
             })
-            .where(eq(votesItems.id, item.id));
+            .where(eq(votesItems.id, item));
         });
       }
     }

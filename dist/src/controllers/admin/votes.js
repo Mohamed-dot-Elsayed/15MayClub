@@ -67,7 +67,7 @@ const createVote = async (req, res) => {
                         .set({
                         voteId: voteId,
                     })
-                        .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, item.id));
+                        .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, item));
                 });
             }
         }
@@ -99,7 +99,7 @@ const updateVote = async (req, res) => {
                         .set({
                         voteId: id,
                     })
-                        .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, item.id));
+                        .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, item));
                 });
             }
         }
