@@ -50,8 +50,6 @@ const getPopUpById = async (req, res) => {
         throw new Errors_1.NotFound("Popup not found");
     const pages = await db_1.db
         .select({
-        pageId: schema_1.popUpsPages.pageId,
-        imageId: schema_1.popUpsPages.imageId,
         pageName: schema_1.appPages.name,
     })
         .from(schema_1.popUpsPages)

@@ -64,8 +64,6 @@ export const getPopUpById = async (req: Request, res: Response) => {
 
   const pages = await db
     .select({
-      pageId: popUpsPages.pageId,
-      imageId: popUpsPages.imageId,
       pageName: appPages.name,
     })
     .from(popUpsPages)
