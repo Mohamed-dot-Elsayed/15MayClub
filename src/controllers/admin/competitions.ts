@@ -30,25 +30,25 @@ export const getAllCompetitions = async (req: Request, res: Response) => {
 
 export const getCompetition = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const [data] = await db
+  const [competition] = await db
     .select()
     .from(competitions)
-    .where(eq(competitions.id, id))
-    .leftJoin(competitionsImages, eq(competitionsImages.competitionId, id));
-
-  if (!data) throw new NotFound("Competition not found");
+    .where(eq(competitions.id, id));
+  if (!competition) throw new NotFound("Competition not found");
+  const competitionImagesd = await db
+    .select()
+    .from(competitionsImages)
+    .where(eq(competitionsImages.competitionId, id));
 
   const formatted = {
-    ...data,
-    competitions: {
-      ...data.competitions,
-      startDate: data.competitions?.startDate
-        ? new Date(data.competitions.startDate).toISOString().slice(0, 10)
-        : null,
-      endDate: data.competitions?.endDate
-        ? new Date(data.competitions.endDate).toISOString().slice(0, 10)
-        : null,
-    },
+    ...competition,
+    startDate: competition?.startDate
+      ? new Date(competition.startDate).toISOString().slice(0, 10)
+      : null,
+    endDate: competition?.endDate
+      ? new Date(competition.endDate).toISOString().slice(0, 10)
+      : null,
+    competitionImagesd,
   };
 
   SuccessResponse(res, { competition: formatted }, 200);
