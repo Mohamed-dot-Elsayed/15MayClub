@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPostWithReacts = exports.reactPost = exports.getPostsByCategory = void 0;
+exports.reactPost = exports.getPostsWithReactsByCategory = void 0;
 const db_1 = require("../../models/db");
 const schema_1 = require("../../models/schema");
 const drizzle_orm_1 = require("drizzle-orm");
@@ -12,20 +12,47 @@ const CATEGORY_IDS = {
     sport: "63b9af5e-60b3-11f0-908d-0050564dafeb",
     cultural: "779a5031-60b3-11f0-908d-0050564dafeb", // looks same as social? Check if typo
 };
-const getPostsByCategory = async (req, res) => {
+const getPostsWithReactsByCategory = async (req, res) => {
     const { type } = req.params;
+    const userId = req.user?.id;
     const categoryId = CATEGORY_IDS[type];
-    if (!categoryId) {
+    if (!categoryId)
         throw new Errors_1.NotFound("Category Not Found");
-    }
-    const postsList = await db_1.db
+    const postsWithImages = await db_1.db
         .select()
         .from(schema_1.posts)
         .where((0, drizzle_orm_1.eq)(schema_1.posts.categoryId, categoryId))
         .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
-    (0, response_1.SuccessResponse)(res, { posts: postsList }, 200);
+    const postIds = postsWithImages.map((p) => p.posts.id);
+    const reactsData = await db_1.db
+        .select({
+        postId: schema_1.reacts.postId,
+        count: (0, drizzle_orm_1.sql) `count(*)`.as("count"),
+    })
+        .from(schema_1.reacts)
+        .where((0, drizzle_orm_1.inArray)(schema_1.reacts.postId, postIds))
+        .groupBy(schema_1.reacts.postId);
+    const userReacts = userId
+        ? await db_1.db
+            .select({ postId: schema_1.reacts.postId })
+            .from(schema_1.reacts)
+            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.inArray)(schema_1.reacts.postId, postIds), (0, drizzle_orm_1.eq)(schema_1.reacts.userId, userId)))
+        : [];
+    const postsdata = postsWithImages.map((p) => {
+        const post = p.posts;
+        const image = p.posts_images;
+        const reactData = reactsData.find((r) => r.postId === post.id);
+        const hasReacted = userReacts.some((r) => r.postId === post.id);
+        return {
+            ...post,
+            image,
+            reactsCount: reactData?.count || 0,
+            reacted: hasReacted,
+        };
+    });
+    (0, response_1.SuccessResponse)(res, { posts: postsdata }, 200);
 };
-exports.getPostsByCategory = getPostsByCategory;
+exports.getPostsWithReactsByCategory = getPostsWithReactsByCategory;
 const reactPost = async (req, res) => {
     const postId = req.params.id;
     const userId = req.user.id;
@@ -45,32 +72,3 @@ const reactPost = async (req, res) => {
     (0, response_1.SuccessResponse)(res, { messafe: "User Liked Success" }, 200);
 };
 exports.reactPost = reactPost;
-const getPostWithReacts = async (req, res) => {
-    const postId = req.params.id;
-    const userId = req.user.id;
-    const [post] = await db_1.db
-        .select()
-        .from(schema_1.posts)
-        .where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId))
-        .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
-    if (!post)
-        throw new Errors_1.NotFound("Post not found");
-    const [{ count }] = await db_1.db
-        .select({ count: (0, drizzle_orm_1.sql) `count(*)` })
-        .from(schema_1.reacts)
-        .where((0, drizzle_orm_1.eq)(schema_1.reacts.postId, postId));
-    let reacted = false;
-    if (userId) {
-        const [userReact] = await db_1.db
-            .select()
-            .from(schema_1.reacts)
-            .where((0, drizzle_orm_1.and)((0, drizzle_orm_1.eq)(schema_1.reacts.postId, postId), (0, drizzle_orm_1.eq)(schema_1.reacts.userId, userId)));
-        reacted = !!userReact;
-        (0, response_1.SuccessResponse)(res, {
-            post,
-            reactsCount: count,
-            reacted,
-        }, 200);
-    }
-};
-exports.getPostWithReacts = getPostWithReacts;

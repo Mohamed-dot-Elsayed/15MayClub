@@ -28,7 +28,16 @@ const createPopUp = async (req, res) => {
 exports.createPopUp = createPopUp;
 const getAllPopUps = async (_req, res) => {
     const result = await db_1.db.select().from(schema_1.popUpsImages);
-    (0, response_1.SuccessResponse)(res, { popups: result }, 200);
+    const formatted = result.map((popup) => ({
+        ...popup,
+        startDate: popup.startDate
+            ? new Date(popup.startDate).toISOString().slice(0, 10)
+            : null,
+        endDate: popup.endDate
+            ? new Date(popup.endDate).toISOString().slice(0, 10)
+            : null,
+    }));
+    (0, response_1.SuccessResponse)(res, { popups: formatted }, 200);
 };
 exports.getAllPopUps = getAllPopUps;
 const getPopUpById = async (req, res) => {
@@ -48,12 +57,16 @@ const getPopUpById = async (req, res) => {
         .from(schema_1.popUpsPages)
         .where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id))
         .leftJoin(schema_1.appPages, (0, drizzle_orm_1.eq)(schema_1.appPages.id, schema_1.popUpsPages.pageId));
-    (0, response_1.SuccessResponse)(res, {
-        popup: {
-            ...popup,
-            pages, // now includes pageName for each
-        },
-    }, 200);
+    const formattedPopup = {
+        ...popup,
+        startDate: popup.startDate
+            ? new Date(popup.startDate).toISOString().slice(0, 10)
+            : null,
+        endDate: popup.endDate
+            ? new Date(popup.endDate).toISOString().slice(0, 10)
+            : null,
+    };
+    (0, response_1.SuccessResponse)(res, { popup: { ...formattedPopup, pages } }, 200);
 };
 exports.getPopUpById = getPopUpById;
 const updatePopUp = async (req, res) => {

@@ -4,7 +4,7 @@ import { z } from "zod";
 export const createSliderSchema = z.object({
   body: z.object({
     name: z.string().min(1),
-    status: z.boolean().optional(),
+    status: z.enum(["active", "disabled"]).optional(),
     order: z.number().int(),
     images: z.array(z.string().min(1)), // base64 or imagePath strings
   }),
@@ -13,7 +13,7 @@ export const createSliderSchema = z.object({
 export const updateSliderSchema = z.object({
   body: z.object({
     name: z.string().min(1).optional(),
-    status: z.boolean().optional(),
+    status: z.enum(["active", "disabled"]).optional(),
     order: z.number().int().optional(),
     images: z.array(z.string().min(1)).optional(),
   }),

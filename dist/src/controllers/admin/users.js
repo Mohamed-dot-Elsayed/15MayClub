@@ -15,7 +15,13 @@ const sendEmails_1 = require("../../utils/sendEmails");
 const deleteImage_1 = require("../../utils/deleteImage");
 const getAllUsers = async (req, res) => {
     const allUsers = await db_1.db.select().from(schema_1.users);
-    (0, response_1.SuccessResponse)(res, { users: allUsers }, 200);
+    const formattedUsers = allUsers.map((user) => ({
+        ...user,
+        dateOfBirth: user.dateOfBirth
+            ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
+            : null,
+    }));
+    (0, response_1.SuccessResponse)(res, { users: formattedUsers }, 200);
 };
 exports.getAllUsers = getAllUsers;
 const getUser = async (req, res) => {
@@ -23,7 +29,13 @@ const getUser = async (req, res) => {
     const [user] = await db_1.db.select().from(schema_1.users).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     if (!user)
         throw new Errors_1.NotFound("User not found");
-    (0, response_1.SuccessResponse)(res, user, 200);
+    const formattedUser = {
+        ...user,
+        dateOfBirth: user.dateOfBirth
+            ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
+            : null,
+    };
+    (0, response_1.SuccessResponse)(res, formattedUser, 200);
 };
 exports.getUser = getUser;
 const updateUser = async (req, res) => {
@@ -44,7 +56,7 @@ const updateUser = async (req, res) => {
         }
         newUser.imagePath = await (0, handleImages_1.saveBase64Image)(newUser.imageBase64, id, req, "users");
     }
-    const result = await db_1.db.update(schema_1.users).set(newUser).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
+    await db_1.db.update(schema_1.users).set(newUser).where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
     (0, response_1.SuccessResponse)(res, { message: "User Updated successfully" }, 200);
 };
 exports.updateUser = updateUser;

@@ -11,7 +11,16 @@ const handleImages_1 = require("../../utils/handleImages");
 const deleteImage_1 = require("../../utils/deleteImage");
 const getAllCompetitions = async (req, res) => {
     const data = await db_1.db.select().from(schema_1.competitions);
-    (0, response_1.SuccessResponse)(res, { competitions: data }, 200);
+    const formatted = data.map((comp) => ({
+        ...comp,
+        startDate: comp.startDate
+            ? new Date(comp.startDate).toISOString().slice(0, 10)
+            : null,
+        endDate: comp.endDate
+            ? new Date(comp.endDate).toISOString().slice(0, 10)
+            : null,
+    }));
+    (0, response_1.SuccessResponse)(res, { competitions: formatted }, 200);
 };
 exports.getAllCompetitions = getAllCompetitions;
 const getCompetition = async (req, res) => {
@@ -22,7 +31,16 @@ const getCompetition = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
     if (!data)
         throw new Errors_1.NotFound("Competition not found");
-    (0, response_1.SuccessResponse)(res, { competition: data }, 200);
+    const formatted = {
+        ...data,
+        startDate: data.startDate
+            ? new Date(data.startDate).toISOString().slice(0, 10)
+            : null,
+        endDate: data.endDate
+            ? new Date(data.endDate).toISOString().slice(0, 10)
+            : null,
+    };
+    (0, response_1.SuccessResponse)(res, { competition: formatted }, 200);
 };
 exports.getCompetition = getCompetition;
 const createCompetition = async (req, res) => {

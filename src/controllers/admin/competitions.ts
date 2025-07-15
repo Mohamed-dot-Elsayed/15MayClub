@@ -14,7 +14,18 @@ import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 export const getAllCompetitions = async (req: Request, res: Response) => {
   const data = await db.select().from(competitions);
-  SuccessResponse(res, { competitions: data }, 200);
+
+  const formatted = data.map((comp) => ({
+    ...comp,
+    startDate: comp.startDate
+      ? new Date(comp.startDate).toISOString().slice(0, 10)
+      : null,
+    endDate: comp.endDate
+      ? new Date(comp.endDate).toISOString().slice(0, 10)
+      : null,
+  }));
+
+  SuccessResponse(res, { competitions: formatted }, 200);
 };
 
 export const getCompetition = async (req: Request, res: Response) => {
@@ -23,8 +34,20 @@ export const getCompetition = async (req: Request, res: Response) => {
     .select()
     .from(competitions)
     .where(eq(competitions.id, id));
+
   if (!data) throw new NotFound("Competition not found");
-  SuccessResponse(res, { competition: data }, 200);
+
+  const formatted = {
+    ...data,
+    startDate: data.startDate
+      ? new Date(data.startDate).toISOString().slice(0, 10)
+      : null,
+    endDate: data.endDate
+      ? new Date(data.endDate).toISOString().slice(0, 10)
+      : null,
+  };
+
+  SuccessResponse(res, { competition: formatted }, 200);
 };
 
 export const createCompetition = async (req: Request, res: Response) => {

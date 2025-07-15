@@ -11,7 +11,15 @@ import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 export const getAllUsers = async (req: Request, res: Response) => {
   const allUsers = await db.select().from(users);
-  SuccessResponse(res, { users: allUsers }, 200);
+
+  const formattedUsers = allUsers.map((user) => ({
+    ...user,
+    dateOfBirth: user.dateOfBirth
+      ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
+      : null,
+  }));
+
+  SuccessResponse(res, { users: formattedUsers }, 200);
 };
 
 export const getUser = async (req: Request, res: Response) => {
@@ -20,7 +28,14 @@ export const getUser = async (req: Request, res: Response) => {
 
   if (!user) throw new NotFound("User not found");
 
-  SuccessResponse(res, user, 200);
+  const formattedUser = {
+    ...user,
+    dateOfBirth: user.dateOfBirth
+      ? new Date(user.dateOfBirth).toISOString().slice(0, 10)
+      : null,
+  };
+
+  SuccessResponse(res, formattedUser, 200);
 };
 
 export const updateUser = async (req: Request, res: Response) => {
@@ -29,10 +44,12 @@ export const updateUser = async (req: Request, res: Response) => {
 
   const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
   if (!user) throw new NotFound("User not found");
+
   if (newUser.password) {
     newUser.hashedPassword = await bcrypt.hash(newUser.password, 10);
     delete newUser.password;
   }
+
   if (newUser.imageBase64) {
     if (user.imagePath) {
       const deleted = await deletePhotoFromServer(user.imagePath);
@@ -46,7 +63,8 @@ export const updateUser = async (req: Request, res: Response) => {
       "users"
     );
   }
-  const result = await db.update(users).set(newUser).where(eq(users.id, id));
+
+  await db.update(users).set(newUser).where(eq(users.id, id));
 
   SuccessResponse(res, { message: "User Updated successfully" }, 200);
 };

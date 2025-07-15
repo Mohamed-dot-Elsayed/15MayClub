@@ -10,10 +10,13 @@ const response_1 = require("../../utils/response");
 const Errors_1 = require("../../Errors");
 const deleteImage_1 = require("../../utils/deleteImage");
 const createSlider = async (req, res) => {
-    const { name, status = true, order, images } = req.body;
+    const { name, status, order, images } = req.body;
     const id = (0, uuid_1.v4)();
+    let newStatus = false;
+    if (status === "active")
+        newStatus = true;
     await db_1.db.transaction(async (tx) => {
-        await tx.insert(schema_1.sliders).values({ id, name, status, order });
+        await tx.insert(schema_1.sliders).values({ id, name, status: newStatus, order });
         const imageValues = await Promise.all(images.map(async (img) => {
             const image_id = (0, uuid_1.v4)();
             return {

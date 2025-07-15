@@ -7,7 +7,6 @@ import {
   int,
   mysqlEnum,
   timestamp,
-  primaryKey,
   unique,
 } from "drizzle-orm/mysql-core";
 

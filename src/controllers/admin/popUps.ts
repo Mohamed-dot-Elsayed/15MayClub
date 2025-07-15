@@ -38,7 +38,18 @@ export const createPopUp = async (req: Request, res: Response) => {
 
 export const getAllPopUps = async (_req: Request, res: Response) => {
   const result = await db.select().from(popUpsImages);
-  SuccessResponse(res, { popups: result }, 200);
+
+  const formatted = result.map((popup) => ({
+    ...popup,
+    startDate: popup.startDate
+      ? new Date(popup.startDate).toISOString().slice(0, 10)
+      : null,
+    endDate: popup.endDate
+      ? new Date(popup.endDate).toISOString().slice(0, 10)
+      : null,
+  }));
+
+  SuccessResponse(res, { popups: formatted }, 200);
 };
 
 export const getPopUpById = async (req: Request, res: Response) => {
@@ -61,16 +72,17 @@ export const getPopUpById = async (req: Request, res: Response) => {
     .where(eq(popUpsPages.imageId, id))
     .leftJoin(appPages, eq(appPages.id, popUpsPages.pageId));
 
-  SuccessResponse(
-    res,
-    {
-      popup: {
-        ...popup,
-        pages, // now includes pageName for each
-      },
-    },
-    200
-  );
+  const formattedPopup = {
+    ...popup,
+    startDate: popup.startDate
+      ? new Date(popup.startDate).toISOString().slice(0, 10)
+      : null,
+    endDate: popup.endDate
+      ? new Date(popup.endDate).toISOString().slice(0, 10)
+      : null,
+  };
+
+  SuccessResponse(res, { popup: { ...formattedPopup, pages } }, 200);
 };
 
 export const updatePopUp = async (req: Request, res: Response) => {

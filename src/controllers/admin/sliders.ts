@@ -14,11 +14,12 @@ import { NotFound } from "../../Errors";
 import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 export const createSlider = async (req: Request, res: Response) => {
-  const { name, status = true, order, images } = req.body;
+  const { name, status, order, images } = req.body;
   const id = uuidv4();
-
+  let newStatus = false;
+  if (status === "active") newStatus = true;
   await db.transaction(async (tx) => {
-    await tx.insert(sliders).values({ id, name, status, order });
+    await tx.insert(sliders).values({ id, name, status: newStatus, order });
     const imageValues = await Promise.all(
       images.map(async (img: any) => {
         const image_id = uuidv4();
