@@ -62,11 +62,12 @@ const createVote = async (req, res) => {
         if (items) {
             if (items.length) {
                 items.forEach(async (item) => {
-                    await tx.insert(schema_1.votesItems).values({
-                        id: (0, uuid_1.v4)(),
+                    await tx
+                        .update(schema_1.votesItems)
+                        .set({
                         voteId: voteId,
-                        item,
-                    });
+                    })
+                        .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, item.id));
                 });
             }
         }
@@ -79,19 +80,30 @@ const updateVote = async (req, res) => {
     const vote = await db_1.db.query.votes.findFirst({ where: (0, drizzle_orm_1.eq)(schema_1.votes.id, id) });
     if (!vote)
         throw new Errors_1.NotFound("Vote not found");
-    const { name, maxSelections, startDate, endDate } = req.body;
-    const updates = {};
-    if (name)
-        updates.name = name;
-    if (maxSelections)
-        updates.maxSelections = maxSelections;
-    if (startDate)
-        updates.startDate = new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000); // Adjusting for timezone
-    if (endDate)
-        updates.endDate = new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000);
-    console.log("updates", updates);
-    if (updates && Object.keys(updates).length > 0)
-        await db_1.db.update(schema_1.votes).set(updates).where((0, drizzle_orm_1.eq)(schema_1.votes.id, id));
+    const { name, maxSelections, items, startDate, endDate } = req.body;
+    await db_1.db.transaction(async (tx) => {
+        await tx
+            .update(schema_1.votes)
+            .set({
+            name,
+            maxSelections,
+            startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+            endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+        })
+            .where((0, drizzle_orm_1.eq)(schema_1.votes.id, id));
+        if (items) {
+            if (items.length) {
+                items.forEach(async (item) => {
+                    await tx
+                        .update(schema_1.votesItems)
+                        .set({
+                        voteId: id,
+                    })
+                        .where((0, drizzle_orm_1.eq)(schema_1.votesItems.id, item.id));
+                });
+            }
+        }
+    });
     (0, response_1.SuccessResponse)(res, { message: "vote updated successfully" }, 200);
 };
 exports.updateVote = updateVote;

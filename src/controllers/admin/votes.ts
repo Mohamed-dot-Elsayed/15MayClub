@@ -28,6 +28,7 @@ export const getAllVotes = async (req: Request, res: Response) => {
         id: vote.id,
         name: vote.name,
         maxSelections: vote.maxSelections,
+
         options: [],
       };
     }
@@ -71,12 +72,13 @@ export const createVote = async (req: Request, res: Response) => {
     });
     if (items) {
       if (items.length) {
-        items.forEach(async (item: string) => {
-          await tx.insert(votesItems).values({
-            id: uuidv4(),
-            voteId: voteId,
-            item,
-          });
+        items.forEach(async (item: any) => {
+          await tx
+            .update(votesItems)
+            .set({
+              voteId: voteId,
+            })
+            .where(eq(votesItems.id, item.id));
         });
       }
     }
@@ -88,22 +90,30 @@ export const updateVote = async (req: Request, res: Response) => {
   const id = req.params.id;
   const vote = await db.query.votes.findFirst({ where: eq(votes.id, id) });
   if (!vote) throw new NotFound("Vote not found");
-  const { name, maxSelections, startDate, endDate } = req.body;
-  const updates: any = {};
-  if (name) updates.name = name;
-  if (maxSelections) updates.maxSelections = maxSelections;
-  if (startDate)
-    updates.startDate = new Date(
-      new Date(startDate).getTime() + 3 * 60 * 60 * 1000
-    ); // Adjusting for timezone
-  if (endDate)
-    updates.endDate = new Date(
-      new Date(endDate).getTime() + 3 * 60 * 60 * 1000
-    );
-  console.log("updates", updates);
-
-  if (updates && Object.keys(updates).length > 0)
-    await db.update(votes).set(updates).where(eq(votes.id, id));
+  const { name, maxSelections, items, startDate, endDate } = req.body;
+  await db.transaction(async (tx) => {
+    await tx
+      .update(votes)
+      .set({
+        name,
+        maxSelections,
+        startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+        endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+      })
+      .where(eq(votes.id, id));
+    if (items) {
+      if (items.length) {
+        items.forEach(async (item: any) => {
+          await tx
+            .update(votesItems)
+            .set({
+              voteId: id,
+            })
+            .where(eq(votesItems.id, item.id));
+        });
+      }
+    }
+  });
   SuccessResponse(res, { message: "vote updated successfully" }, 200);
 };
 
