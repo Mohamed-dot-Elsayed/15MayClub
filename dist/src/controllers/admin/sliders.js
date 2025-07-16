@@ -34,7 +34,7 @@ const getAllSlidersForAdmin = async (req, res) => {
         .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, schema_1.sliders.id));
     const groupedSliders = data.reduce((acc, curr) => {
         const slider = curr.sliders;
-        const image = curr.sliderImages?.image_path || null;
+        const image = curr.slider_images?.image_path || null;
         const existing = acc.find((s) => s.id === slider.id);
         if (existing) {
             if (image)
@@ -44,6 +44,7 @@ const getAllSlidersForAdmin = async (req, res) => {
             acc.push({
                 id: slider.id,
                 name: slider.name,
+                order: slider.order,
                 status: slider.status,
                 images: image ? [image] : [],
             });

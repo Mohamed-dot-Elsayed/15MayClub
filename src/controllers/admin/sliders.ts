@@ -35,7 +35,7 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
 
   const groupedSliders = data.reduce((acc: any[], curr: any) => {
     const slider = curr.sliders;
-    const image = curr.sliderImages?.image_path || null;
+    const image = curr.slider_images?.image_path || null;
 
     const existing = acc.find((s) => s.id === slider.id);
 
@@ -45,6 +45,7 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
       acc.push({
         id: slider.id,
         name: slider.name,
+        order: slider.order,
         status: slider.status,
         images: image ? [image] : [],
       });
