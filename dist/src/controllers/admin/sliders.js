@@ -31,7 +31,7 @@ const getAllSlidersForAdmin = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.sliders)
-        .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliders.id, schema_1.sliderImages.slider_id));
+        .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, schema_1.sliders.id));
     const groupedSliders = data.reduce((acc, curr) => {
         const slider = curr.sliders;
         const image = curr.sliderImages?.image_path || null;

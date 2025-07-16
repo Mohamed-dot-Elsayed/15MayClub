@@ -31,7 +31,7 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(sliders)
-    .leftJoin(sliderImages, eq(sliders.id, sliderImages.slider_id));
+    .leftJoin(sliderImages, eq(sliderImages.slider_id, sliders.id));
 
   const groupedSliders = data.reduce((acc: any[], curr: any) => {
     const slider = curr.sliders;
