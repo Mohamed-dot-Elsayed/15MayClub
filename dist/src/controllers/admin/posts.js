@@ -123,30 +123,33 @@ const updatePost = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
     if (!existingPost)
         throw new Errors_1.NotFound("Post not found");
-    // Update title and category
+    // Update post title and category
     await db_1.db.update(schema_1.posts).set({ title, categoryId }).where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
-    // If images provided → replace
+    // If new images are provided, replace old ones
     if (images && Array.isArray(images)) {
-        // Delete old images
-        const imagess = await db_1.db
+        // Fetch old images
+        const oldImages = await db_1.db
             .select()
             .from(schema_1.postsImages)
             .where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
-        imagess.forEach(async (img) => {
+        // Delete old images from server
+        await Promise.all(oldImages.map(async (img) => {
             const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
             if (!deleted)
                 throw new Errors_1.ConflictError("Failed to delete post image from server");
-        });
+        }));
+        // Delete old images from DB
         await db_1.db.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
-        // Insert new images
-        images.forEach(async (imagePath) => {
+        // Save new images
+        await Promise.all(images.map(async (imagePath) => {
             const imageId = (0, uuid_1.v4)();
+            const savedPath = await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "posts");
             await db_1.db.insert(schema_1.postsImages).values({
                 id: imageId,
-                postId: postId,
-                imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "posts"),
+                postId,
+                imagePath: savedPath,
             });
-        });
+        }));
     }
     (0, response_1.SuccessResponse)(res, { message: "Post updated" }, 200);
 };
