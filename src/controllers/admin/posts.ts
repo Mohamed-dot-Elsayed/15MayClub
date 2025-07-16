@@ -83,7 +83,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(posts)
-    .leftJoin(postsImages, eq(posts.id, postsImages.postId));
+    .innerJoin(postsImages, eq(posts.id, postsImages.postId));
 
   SuccessResponse(res, { posts: data }, 200);
 };

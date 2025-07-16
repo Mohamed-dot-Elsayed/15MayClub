@@ -80,7 +80,7 @@ const getAllPosts = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.posts)
-        .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
+        .innerJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
     (0, response_1.SuccessResponse)(res, { posts: data }, 200);
 };
 exports.getAllPosts = getAllPosts;
