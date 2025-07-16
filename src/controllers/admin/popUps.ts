@@ -85,14 +85,30 @@ export const getPopUpById = async (req: Request, res: Response) => {
 };
 
 export const updatePopUp = async (req: Request, res: Response) => {
+  let {
+    title,
+    imagePath,
+    startDate,
+    endDate,
+    status = "active",
+    pageIds,
+  } = req.body;
   const id = req.params.id;
+  const [pop] = await db
+    .select()
+    .from(popUpsImages)
+    .where(eq(popUpsImages.id, id));
+  if (!pop) throw new NotFound("popup not found");
   const data = req.body;
   await db.transaction(async (tx) => {
     if (Object.keys(data).length > 0) {
-      const { pageIds, ...updateData } = data;
+      if (imagePath) {
+        await deletePhotoFromServer(new URL(pop.imagePath).pathname);
+        imagePath = await saveBase64Image(imagePath, id, req, "popups");
+      }
       await tx
         .update(popUpsImages)
-        .set(updateData)
+        .set({ title, imagePath, startDate, endDate, status })
         .where(eq(popUpsImages.id, id));
 
       if (pageIds) {

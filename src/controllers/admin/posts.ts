@@ -65,20 +65,15 @@ export const createPost = async (req: Request, res: Response) => {
 
   await db.insert(posts).values({ id: postId, title, categoryId });
 
-  if (images?.length) {
-    const imageData = await Promise.all(
-      images.map(async (img: string) => {
-        const ide = uuidv4();
-        const imagePath = await saveBase64Image(img, ide, req, "posts");
-        return {
-          id: ide,
-          imagePath,
-          postId,
-        };
-      })
-    );
-
-    await db.insert(postsImages).values(imageData);
+  if (images !== undefined && Object.keys(images).length > 0) {
+    images.forEach(async (imagePath: any) => {
+      const imageId = uuidv4();
+      await db.insert(postsImages).values({
+        id: imageId,
+        postId: postId,
+        imagePath: await saveBase64Image(imagePath, imageId, req, "posts"),
+      });
+    });
   }
 
   SuccessResponse(res, { message: "Post created", postId }, 201);
@@ -136,20 +131,14 @@ export const updatePost = async (req: Request, res: Response) => {
     });
     await db.delete(postsImages).where(eq(postsImages.postId, postId));
     // Insert new images
-    const imageValues = await Promise.all(
-      images.map(async (img: string) => {
-        const imageId = uuidv4();
-        return {
-          id: imageId,
-          imagePath: await saveBase64Image(img, imageId, req, "posts"),
-          postId,
-        };
-      })
-    );
-
-    if (imageValues.length > 0) {
-      await db.insert(postsImages).values(imageValues);
-    }
+    images.forEach(async (imagePath: any) => {
+      const imageId = uuidv4();
+      await db.insert(postsImages).values({
+        id: imageId,
+        postId: postId,
+        imagePath: await saveBase64Image(imagePath, imageId, req, "posts"),
+      });
+    });
   }
 
   SuccessResponse(res, { message: "Post updated" }, 200);

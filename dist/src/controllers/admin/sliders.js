@@ -15,17 +15,14 @@ const createSlider = async (req, res) => {
     let newStatus = false;
     if (status === "active")
         newStatus = true;
-    await db_1.db.transaction(async (tx) => {
-        await tx.insert(schema_1.sliders).values({ id, name, status: newStatus, order });
-        const imageValues = await Promise.all(images.map(async (img) => {
-            const image_id = (0, uuid_1.v4)();
-            return {
-                id: image_id,
-                slider_id: id,
-                image_path: await (0, handleImages_1.saveBase64Image)(img, image_id, req, "slider"), // pass image_id if needed
-            };
-        }));
-        await tx.insert(schema_1.sliderImages).values(imageValues);
+    await db_1.db.insert(schema_1.sliders).values({ id, name, status: newStatus, order });
+    images.forEach(async (imagePath) => {
+        const imageId = (0, uuid_1.v4)();
+        await db_1.db.insert(schema_1.sliderImages).values({
+            id: imageId,
+            slider_id: id,
+            image_path: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "slider"),
+        });
     });
     (0, response_1.SuccessResponse)(res, { message: "Slider created successfully" }, 201);
 };
@@ -58,26 +55,22 @@ const updateSlider = async (req, res) => {
         if (Object.keys(data).length > 0) {
             await tx.update(schema_1.sliders).set(data).where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id));
         }
-        if (data.images) {
-            const images = await db_1.db
+        if (data.images !== undefined && Object.keys(data.images).length > 0) {
+            const sliderImagesd = await db_1.db
                 .select()
                 .from(schema_1.sliderImages)
                 .where((0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, id));
-            for (const image of images) {
-                if (image.image_path) {
-                    await (0, deleteImage_1.deletePhotoFromServer)(image.image_path); // or check return value
-                }
-            }
-            await tx.delete(schema_1.sliderImages).where((0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, id));
-            const imageValues = await Promise.all(data.images.map(async (img) => {
-                const image_id = (0, uuid_1.v4)();
-                return {
-                    id: image_id,
+            sliderImagesd.forEach(async (image) => {
+                await (0, deleteImage_1.deletePhotoFromServer)(new URL(image.id).pathname);
+            });
+            data.images.forEach(async (imagePath) => {
+                const imageId = (0, uuid_1.v4)();
+                await db_1.db.insert(schema_1.sliderImages).values({
+                    id: imageId,
                     slider_id: id,
-                    image_path: await (0, handleImages_1.saveBase64Image)(img, image_id, req, "slider"), // pass image_id if needed
-                };
-            }));
-            await tx.insert(schema_1.sliderImages).values(imageValues);
+                    image_path: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "slider"),
+                });
+            });
         }
     });
     (0, response_1.SuccessResponse)(res, { message: "Slider updated successfully" }, 200);

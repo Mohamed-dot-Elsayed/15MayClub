@@ -1,5 +1,5 @@
 import { Response, Request } from "express";
-import { complaintsCategory, complaints } from "../../models/schema";
+import { complaintsCategory, complaints, users } from "../../models/schema";
 import { db } from "../../models/db";
 import { SuccessResponse } from "../../utils/response";
 import { eq } from "drizzle-orm";
@@ -65,17 +65,46 @@ export const updateComplaintsCategory = async (req: Request, res: Response) => {
 
 // Complaints Handlers
 export const getAllComplaints = async (req: Request, res: Response) => {
-  const data = await db.select().from(complaints);
+  const data = await db
+    .select({
+      id: complaints.id,
+      description: complaints.content,
+      seen: complaints.seen,
+      createdAt: complaints.date,
+      username: users.name, // ✅ get username
+      categoryName: complaintsCategory.name, // ✅ get category name
+    })
+    .from(complaints)
+    .leftJoin(users, eq(complaints.userId, users.id))
+    .leftJoin(
+      complaintsCategory,
+      eq(complaints.categoryId, complaintsCategory.id)
+    );
   SuccessResponse(res, { complaints: data }, 200);
 };
 
 export const getComplaint = async (req: Request, res: Response) => {
   const { id } = req.params;
+
   const [data] = await db
-    .select()
+    .select({
+      id: complaints.id,
+      description: complaints.content,
+      seen: complaints.seen,
+      createdAt: complaints.date,
+      username: users.name, // ✅ get username
+      categoryName: complaintsCategory.name, // ✅ get category name
+    })
     .from(complaints)
-    .where(eq(complaints.id, id));
+    .where(eq(complaints.id, id))
+    .leftJoin(users, eq(complaints.userId, users.id))
+    .leftJoin(
+      complaintsCategory,
+      eq(complaints.categoryId, complaintsCategory.id)
+    );
+
   if (!data) throw new NotFound("Complaint not found");
+
   SuccessResponse(res, { complaint: data }, 200);
 };
 

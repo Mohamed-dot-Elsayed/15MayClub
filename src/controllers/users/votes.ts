@@ -87,7 +87,7 @@ export const submitVote = async (req: Request, res: Response) => {
 export const voteResult = async (req: Request, res: Response) => {
   const voteId = req.params.id;
 
-  const [results]: any = await pool.query("CALL GetVoteResults2(?)", [voteId]);
+  const [results]: any = await pool.query("CALL GetVoteResults(?)", [voteId]);
 
   const finalResult = results[0]; // CALL returns [[rows], fields]
 

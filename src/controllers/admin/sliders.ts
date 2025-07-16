@@ -18,19 +18,14 @@ export const createSlider = async (req: Request, res: Response) => {
   const id = uuidv4();
   let newStatus = false;
   if (status === "active") newStatus = true;
-  await db.transaction(async (tx) => {
-    await tx.insert(sliders).values({ id, name, status: newStatus, order });
-    const imageValues = await Promise.all(
-      images.map(async (img: any) => {
-        const image_id = uuidv4();
-        return {
-          id: image_id,
-          slider_id: id,
-          image_path: await saveBase64Image(img, image_id, req, "slider"), // pass image_id if needed
-        };
-      })
-    );
-    await tx.insert(sliderImages).values(imageValues);
+  await db.insert(sliders).values({ id, name, status: newStatus, order });
+  images.forEach(async (imagePath: any) => {
+    const imageId = uuidv4();
+    await db.insert(sliderImages).values({
+      id: imageId,
+      slider_id: id,
+      image_path: await saveBase64Image(imagePath, imageId, req, "slider"),
+    });
   });
 
   SuccessResponse(res, { message: "Slider created successfully" }, 201);
@@ -66,29 +61,22 @@ export const updateSlider = async (req: Request, res: Response) => {
       await tx.update(sliders).set(data).where(eq(sliders.id, id));
     }
 
-    if (data.images) {
-      const images = await db
+    if (data.images !== undefined && Object.keys(data.images).length > 0) {
+      const sliderImagesd = await db
         .select()
         .from(sliderImages)
         .where(eq(sliderImages.slider_id, id));
-
-      for (const image of images) {
-        if (image.image_path) {
-          await deletePhotoFromServer(image.image_path); // or check return value
-        }
-      }
-      await tx.delete(sliderImages).where(eq(sliderImages.slider_id, id));
-      const imageValues = await Promise.all(
-        data.images.map(async (img: any) => {
-          const image_id = uuidv4();
-          return {
-            id: image_id,
-            slider_id: id,
-            image_path: await saveBase64Image(img, image_id, req, "slider"), // pass image_id if needed
-          };
-        })
-      );
-      await tx.insert(sliderImages).values(imageValues);
+      sliderImagesd.forEach(async (image) => {
+        await deletePhotoFromServer(new URL(image.id).pathname);
+      });
+      data.images.forEach(async (imagePath: any) => {
+        const imageId = uuidv4();
+        await db.insert(sliderImages).values({
+          id: imageId,
+          slider_id: id,
+          image_path: await saveBase64Image(imagePath, imageId, req, "slider"),
+        });
+      });
     }
   });
 

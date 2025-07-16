@@ -80,7 +80,7 @@ const submitVote = async (req, res) => {
 exports.submitVote = submitVote;
 const voteResult = async (req, res) => {
     const voteId = req.params.id;
-    const [results] = await db_1.pool.query("CALL GetVoteResults2(?)", [voteId]);
+    const [results] = await db_1.pool.query("CALL GetVoteResults(?)", [voteId]);
     const finalResult = results[0]; // CALL returns [[rows], fields]
     if (!finalResult.length)
         throw new Errors_1.NotFound("No vote results found");

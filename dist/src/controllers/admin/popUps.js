@@ -69,14 +69,24 @@ const getPopUpById = async (req, res) => {
 };
 exports.getPopUpById = getPopUpById;
 const updatePopUp = async (req, res) => {
+    let { title, imagePath, startDate, endDate, status = "active", pageIds, } = req.body;
     const id = req.params.id;
+    const [pop] = await db_1.db
+        .select()
+        .from(schema_1.popUpsImages)
+        .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
+    if (!pop)
+        throw new Errors_1.NotFound("popup not found");
     const data = req.body;
     await db_1.db.transaction(async (tx) => {
         if (Object.keys(data).length > 0) {
-            const { pageIds, ...updateData } = data;
+            if (imagePath) {
+                await (0, deleteImage_1.deletePhotoFromServer)(new URL(pop.imagePath).pathname);
+                imagePath = await (0, handleImages_1.saveBase64Image)(imagePath, id, req, "popups");
+            }
             await tx
                 .update(schema_1.popUpsImages)
-                .set(updateData)
+                .set({ title, imagePath, startDate, endDate, status })
                 .where((0, drizzle_orm_1.eq)(schema_1.popUpsImages.id, id));
             if (pageIds) {
                 await tx.delete(schema_1.popUpsPages).where((0, drizzle_orm_1.eq)(schema_1.popUpsPages.imageId, id));

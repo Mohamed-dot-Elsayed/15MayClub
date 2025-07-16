@@ -71,16 +71,36 @@ const updateComplaintsCategory = async (req, res) => {
 exports.updateComplaintsCategory = updateComplaintsCategory;
 // Complaints Handlers
 const getAllComplaints = async (req, res) => {
-    const data = await db_1.db.select().from(schema_1.complaints);
+    const data = await db_1.db
+        .select({
+        id: schema_1.complaints.id,
+        description: schema_1.complaints.content,
+        seen: schema_1.complaints.seen,
+        createdAt: schema_1.complaints.date,
+        username: schema_1.users.name, // ✅ get username
+        categoryName: schema_1.complaintsCategory.name, // ✅ get category name
+    })
+        .from(schema_1.complaints)
+        .leftJoin(schema_1.users, (0, drizzle_orm_1.eq)(schema_1.complaints.userId, schema_1.users.id))
+        .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id));
     (0, response_1.SuccessResponse)(res, { complaints: data }, 200);
 };
 exports.getAllComplaints = getAllComplaints;
 const getComplaint = async (req, res) => {
     const { id } = req.params;
     const [data] = await db_1.db
-        .select()
+        .select({
+        id: schema_1.complaints.id,
+        description: schema_1.complaints.content,
+        seen: schema_1.complaints.seen,
+        createdAt: schema_1.complaints.date,
+        username: schema_1.users.name, // ✅ get username
+        categoryName: schema_1.complaintsCategory.name, // ✅ get category name
+    })
         .from(schema_1.complaints)
-        .where((0, drizzle_orm_1.eq)(schema_1.complaints.id, id));
+        .where((0, drizzle_orm_1.eq)(schema_1.complaints.id, id))
+        .leftJoin(schema_1.users, (0, drizzle_orm_1.eq)(schema_1.complaints.userId, schema_1.users.id))
+        .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id));
     if (!data)
         throw new Errors_1.NotFound("Complaint not found");
     (0, response_1.SuccessResponse)(res, { complaint: data }, 200);

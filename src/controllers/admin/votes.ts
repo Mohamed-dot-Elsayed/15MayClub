@@ -29,8 +29,8 @@ export const getAllVotes = async (req: Request, res: Response) => {
         id: vote.id,
         name: vote.name,
         maxSelections: vote.maxSelections,
-        startDate: vote.startDate,
-        endDate: vote.endDate,
+        startDate: new Date(vote.startDate).toString().substring(0, 10),
+        endDate: new Date(vote.endDate).toString().substring(0, 10),
         options: [],
         votesCount: 0,
       };

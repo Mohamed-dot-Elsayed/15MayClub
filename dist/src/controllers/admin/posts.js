@@ -63,17 +63,15 @@ const createPost = async (req, res) => {
     const { title, categoryId, images } = req.body;
     const postId = (0, uuid_1.v4)();
     await db_1.db.insert(schema_1.posts).values({ id: postId, title, categoryId });
-    if (images?.length) {
-        const imageData = await Promise.all(images.map(async (img) => {
-            const ide = (0, uuid_1.v4)();
-            const imagePath = await (0, handleImages_1.saveBase64Image)(img, ide, req, "posts");
-            return {
-                id: ide,
-                imagePath,
-                postId,
-            };
-        }));
-        await db_1.db.insert(schema_1.postsImages).values(imageData);
+    if (images !== undefined && Object.keys(images).length > 0) {
+        images.forEach(async (imagePath) => {
+            const imageId = (0, uuid_1.v4)();
+            await db_1.db.insert(schema_1.postsImages).values({
+                id: imageId,
+                postId: postId,
+                imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "posts"),
+            });
+        });
     }
     (0, response_1.SuccessResponse)(res, { message: "Post created", postId }, 201);
 };
@@ -124,17 +122,14 @@ const updatePost = async (req, res) => {
         });
         await db_1.db.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
         // Insert new images
-        const imageValues = await Promise.all(images.map(async (img) => {
+        images.forEach(async (imagePath) => {
             const imageId = (0, uuid_1.v4)();
-            return {
+            await db_1.db.insert(schema_1.postsImages).values({
                 id: imageId,
-                imagePath: await (0, handleImages_1.saveBase64Image)(img, imageId, req, "posts"),
-                postId,
-            };
-        }));
-        if (imageValues.length > 0) {
-            await db_1.db.insert(schema_1.postsImages).values(imageValues);
-        }
+                postId: postId,
+                imagePath: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "posts"),
+            });
+        });
     }
     (0, response_1.SuccessResponse)(res, { message: "Post updated" }, 200);
 };
