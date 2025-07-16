@@ -85,7 +85,27 @@ export const getAllPosts = async (req: Request, res: Response) => {
     .from(posts)
     .innerJoin(postsImages, eq(posts.id, postsImages.postId));
 
-  SuccessResponse(res, { posts: data }, 200);
+  const groupedPosts = data.reduce((acc: any[], curr: any) => {
+    const post = curr.posts;
+    const image = curr.posts_images.imagePath;
+
+    const existing = acc.find((p) => p.id === post.id);
+
+    if (existing) {
+      existing.images.push(image);
+    } else {
+      acc.push({
+        id: post.id,
+        title: post.title,
+        categoryId: post.categoryId,
+        images: [image],
+      });
+    }
+
+    return acc;
+  }, []);
+
+  SuccessResponse(res, { posts: groupedPosts }, 200);
 };
 
 export const getPost = async (req: Request, res: Response) => {

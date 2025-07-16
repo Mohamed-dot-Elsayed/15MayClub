@@ -81,7 +81,24 @@ const getAllPosts = async (req, res) => {
         .select()
         .from(schema_1.posts)
         .innerJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
-    (0, response_1.SuccessResponse)(res, { posts: data }, 200);
+    const groupedPosts = data.reduce((acc, curr) => {
+        const post = curr.posts;
+        const image = curr.posts_images.imagePath;
+        const existing = acc.find((p) => p.id === post.id);
+        if (existing) {
+            existing.images.push(image);
+        }
+        else {
+            acc.push({
+                id: post.id,
+                title: post.title,
+                categoryId: post.categoryId,
+                images: [image],
+            });
+        }
+        return acc;
+    }, []);
+    (0, response_1.SuccessResponse)(res, { posts: groupedPosts }, 200);
 };
 exports.getAllPosts = getAllPosts;
 const getPost = async (req, res) => {
