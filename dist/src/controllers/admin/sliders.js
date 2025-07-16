@@ -78,7 +78,7 @@ const updateSlider = async (req, res) => {
         // Handle images logic
         if (Array.isArray(images)) {
             // 1. Delete given images (with id + image_path)
-            const deletions = images.filter((img) => img.id && img.image_path && !img.image_path.startsWith("data:"));
+            const deletions = images.filter((img) => img.id && img.image_path);
             for (const img of deletions) {
                 await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.image_path).pathname);
                 await tx.delete(schema_1.sliderImages).where((0, drizzle_orm_1.eq)(schema_1.sliderImages.id, img.id));
