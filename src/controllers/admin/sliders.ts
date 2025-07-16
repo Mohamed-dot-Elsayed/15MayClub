@@ -59,13 +59,13 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
 
 export const getSliderById = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const slider = await db
-    .select()
-    .from(sliders)
-    .where(eq(sliders.id, id))
-    .leftJoin(sliderImages, eq(sliders.id, sliderImages.slider_id));
+  const [slider] = await db.select().from(sliders).where(eq(sliders.id, id));
   if (!slider) throw new NotFound("Slider not found");
-  SuccessResponse(res, { slider }, 200);
+  const sliderImagesd = await db
+    .select()
+    .from(sliderImages)
+    .where(eq(sliderImages.slider_id, id));
+  SuccessResponse(res, { slider, sliderImagesd }, 200);
 };
 
 export const updateSlider = async (req: Request, res: Response) => {

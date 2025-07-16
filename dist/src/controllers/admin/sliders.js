@@ -56,14 +56,14 @@ const getAllSlidersForAdmin = async (req, res) => {
 exports.getAllSlidersForAdmin = getAllSlidersForAdmin;
 const getSliderById = async (req, res) => {
     const id = req.params.id;
-    const slider = await db_1.db
-        .select()
-        .from(schema_1.sliders)
-        .where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id))
-        .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliders.id, schema_1.sliderImages.slider_id));
+    const [slider] = await db_1.db.select().from(schema_1.sliders).where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id));
     if (!slider)
         throw new Errors_1.NotFound("Slider not found");
-    (0, response_1.SuccessResponse)(res, { slider }, 200);
+    const sliderImagesd = await db_1.db
+        .select()
+        .from(schema_1.sliderImages)
+        .where((0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, id));
+    (0, response_1.SuccessResponse)(res, { slider, sliderImagesd }, 200);
 };
 exports.getSliderById = getSliderById;
 const updateSlider = async (req, res) => {
