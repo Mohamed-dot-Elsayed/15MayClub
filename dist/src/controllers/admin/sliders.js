@@ -56,7 +56,7 @@ const getAllSlidersForAdmin = async (req, res) => {
 exports.getAllSlidersForAdmin = getAllSlidersForAdmin;
 const getSliderById = async (req, res) => {
     const id = req.params.id;
-    const [slider] = await db_1.db
+    const slider = await db_1.db
         .select()
         .from(schema_1.sliders)
         .where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id))

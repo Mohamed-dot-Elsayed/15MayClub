@@ -59,7 +59,7 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
 
 export const getSliderById = async (req: Request, res: Response) => {
   const id = req.params.id;
-  const [slider] = await db
+  const slider = await db
     .select()
     .from(sliders)
     .where(eq(sliders.id, id))
