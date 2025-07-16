@@ -76,14 +76,18 @@ const getAllComplaints = async (req, res) => {
         id: schema_1.complaints.id,
         description: schema_1.complaints.content,
         seen: schema_1.complaints.seen,
-        createdAt: schema_1.complaints.date,
-        username: schema_1.users.name, // ✅ get username
-        categoryName: schema_1.complaintsCategory.name, // ✅ get category name
+        date: schema_1.complaints.date,
+        username: schema_1.users.name,
+        categoryName: schema_1.complaintsCategory.name,
     })
         .from(schema_1.complaints)
         .leftJoin(schema_1.users, (0, drizzle_orm_1.eq)(schema_1.complaints.userId, schema_1.users.id))
         .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id));
-    (0, response_1.SuccessResponse)(res, { complaints: data }, 200);
+    const formatData = data.map((dat) => ({
+        ...dat,
+        date: new Date(dat.date).toString().substring(0, 10),
+    }));
+    (0, response_1.SuccessResponse)(res, { complaints: formatData }, 200);
 };
 exports.getAllComplaints = getAllComplaints;
 const getComplaint = async (req, res) => {
@@ -93,7 +97,7 @@ const getComplaint = async (req, res) => {
         id: schema_1.complaints.id,
         description: schema_1.complaints.content,
         seen: schema_1.complaints.seen,
-        createdAt: schema_1.complaints.date,
+        date: schema_1.complaints.date,
         username: schema_1.users.name, // ✅ get username
         categoryName: schema_1.complaintsCategory.name, // ✅ get category name
     })
@@ -103,7 +107,11 @@ const getComplaint = async (req, res) => {
         .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id));
     if (!data)
         throw new Errors_1.NotFound("Complaint not found");
-    (0, response_1.SuccessResponse)(res, { complaint: data }, 200);
+    const formatData = {
+        ...data,
+        date: new Date(data.date).toString().substring(0, 10),
+    };
+    (0, response_1.SuccessResponse)(res, { complaint: formatData }, 200);
 };
 exports.getComplaint = getComplaint;
 const makeComplaintSeen = async (req, res) => {

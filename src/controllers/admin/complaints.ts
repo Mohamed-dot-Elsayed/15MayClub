@@ -70,9 +70,9 @@ export const getAllComplaints = async (req: Request, res: Response) => {
       id: complaints.id,
       description: complaints.content,
       seen: complaints.seen,
-      createdAt: complaints.date,
-      username: users.name, // ✅ get username
-      categoryName: complaintsCategory.name, // ✅ get category name
+      date: complaints.date,
+      username: users.name,
+      categoryName: complaintsCategory.name,
     })
     .from(complaints)
     .leftJoin(users, eq(complaints.userId, users.id))
@@ -80,7 +80,12 @@ export const getAllComplaints = async (req: Request, res: Response) => {
       complaintsCategory,
       eq(complaints.categoryId, complaintsCategory.id)
     );
-  SuccessResponse(res, { complaints: data }, 200);
+  const formatData = data.map((dat) => ({
+    ...dat,
+    date: new Date(dat.date).toString().substring(0, 10),
+  }));
+
+  SuccessResponse(res, { complaints: formatData }, 200);
 };
 
 export const getComplaint = async (req: Request, res: Response) => {
@@ -91,7 +96,7 @@ export const getComplaint = async (req: Request, res: Response) => {
       id: complaints.id,
       description: complaints.content,
       seen: complaints.seen,
-      createdAt: complaints.date,
+      date: complaints.date,
       username: users.name, // ✅ get username
       categoryName: complaintsCategory.name, // ✅ get category name
     })
@@ -104,8 +109,11 @@ export const getComplaint = async (req: Request, res: Response) => {
     );
 
   if (!data) throw new NotFound("Complaint not found");
-
-  SuccessResponse(res, { complaint: data }, 200);
+  const formatData = {
+    ...data,
+    date: new Date(data.date).toString().substring(0, 10),
+  };
+  SuccessResponse(res, { complaint: formatData }, 200);
 };
 
 export const makeComplaintSeen = async (req: Request, res: Response) => {

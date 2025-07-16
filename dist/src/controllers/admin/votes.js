@@ -54,7 +54,12 @@ const getVote = async (req, res) => {
         .select()
         .from(schema_1.votesItems)
         .where((0, drizzle_orm_1.eq)(schema_1.votesItems.voteId, id));
-    (0, response_1.SuccessResponse)(res, { vote: { ...vote, options } }, 200);
+    const formatVote = {
+        ...vote,
+        startDate: new Date(vote.startDate).toString().substring(0, 10),
+        endDate: new Date(vote.endDate).toString().substring(0, 10),
+    };
+    (0, response_1.SuccessResponse)(res, { vote: { ...formatVote, options } }, 200);
 };
 exports.getVote = getVote;
 const createVote = async (req, res) => {

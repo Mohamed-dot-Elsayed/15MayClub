@@ -64,7 +64,12 @@ export const getVote = async (req: Request, res: Response) => {
     .select()
     .from(votesItems)
     .where(eq(votesItems.voteId, id));
-  SuccessResponse(res, { vote: { ...vote, options } }, 200);
+  const formatVote = {
+    ...vote,
+    startDate: new Date(vote.startDate).toString().substring(0, 10),
+    endDate: new Date(vote.endDate).toString().substring(0, 10),
+  };
+  SuccessResponse(res, { vote: { ...formatVote, options } }, 200);
 };
 
 export const createVote = async (req: Request, res: Response) => {
