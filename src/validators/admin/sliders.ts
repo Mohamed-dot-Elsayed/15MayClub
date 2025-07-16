@@ -15,6 +15,6 @@ export const updateSliderSchema = z.object({
     name: z.string().min(1).optional(),
     status: z.enum(["active", "disabled"]).optional(),
     order: z.number().int().optional(),
-    images: z.array(z.string().min(1)).optional(),
+    images: z.array(z.any()).optional(),
   }),
 });

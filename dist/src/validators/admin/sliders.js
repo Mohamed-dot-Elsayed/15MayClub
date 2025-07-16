@@ -16,6 +16,6 @@ exports.updateSliderSchema = zod_1.z.object({
         name: zod_1.z.string().min(1).optional(),
         status: zod_1.z.enum(["active", "disabled"]).optional(),
         order: zod_1.z.number().int().optional(),
-        images: zod_1.z.array(zod_1.z.string().min(1)).optional(),
+        images: zod_1.z.array(zod_1.z.any()).optional(),
     }),
 });

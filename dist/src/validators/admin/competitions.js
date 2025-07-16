@@ -42,7 +42,7 @@ exports.updateCompetitionSchema = zod_1.z.object({
             message: "Invalid endDate",
         })
             .optional(),
-        images: zod_1.z.array(base64Image).optional(),
+        images: zod_1.z.array(zod_1.z.any()).optional(),
     }),
 });
 // Remove user from competition

@@ -42,7 +42,7 @@ export const updateCompetitionSchema = z.object({
         message: "Invalid endDate",
       })
       .optional(),
-    images: z.array(base64Image).optional(),
+    images: z.array(z.any()).optional(),
   }),
 });
 
