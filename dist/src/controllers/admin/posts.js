@@ -80,7 +80,7 @@ const getAllPosts = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.posts)
-        .innerJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
+        .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
     const groupedPosts = data.reduce((acc, curr) => {
         const post = curr.posts;
         const image = curr.posts_images.imagePath;

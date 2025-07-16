@@ -83,7 +83,7 @@ export const getAllPosts = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(posts)
-    .innerJoin(postsImages, eq(posts.id, postsImages.postId));
+    .leftJoin(postsImages, eq(posts.id, postsImages.postId));
 
   const groupedPosts = data.reduce((acc: any[], curr: any) => {
     const post = curr.posts;
