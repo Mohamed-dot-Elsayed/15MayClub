@@ -85,7 +85,7 @@ const getAllComplaints = async (req, res) => {
         .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id));
     const formatData = data.map((dat) => ({
         ...dat,
-        date: new Date(dat.date).toString().substring(0, 10),
+        date: new Date(dat.date).toISOString().substring(0, 10),
     }));
     (0, response_1.SuccessResponse)(res, { complaints: formatData }, 200);
 };
@@ -109,7 +109,7 @@ const getComplaint = async (req, res) => {
         throw new Errors_1.NotFound("Complaint not found");
     const formatData = {
         ...data,
-        date: new Date(data.date).toString().substring(0, 10),
+        date: new Date(data.date).toISOString().substring(0, 10),
     };
     (0, response_1.SuccessResponse)(res, { complaint: formatData }, 200);
 };

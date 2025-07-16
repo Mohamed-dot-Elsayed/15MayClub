@@ -29,8 +29,8 @@ export const getAllVotes = async (req: Request, res: Response) => {
         id: vote.id,
         name: vote.name,
         maxSelections: vote.maxSelections,
-        startDate: new Date(vote.startDate).toString().substring(0, 10),
-        endDate: new Date(vote.endDate).toString().substring(0, 10),
+        startDate: new Date(vote.startDate).toISOString().substring(0, 10),
+        endDate: new Date(vote.endDate).toISOString().substring(0, 10),
         options: [],
         votesCount: 0,
       };
@@ -66,8 +66,8 @@ export const getVote = async (req: Request, res: Response) => {
     .where(eq(votesItems.voteId, id));
   const formatVote = {
     ...vote,
-    startDate: new Date(vote.startDate).toString().substring(0, 10),
-    endDate: new Date(vote.endDate).toString().substring(0, 10),
+    startDate: new Date(vote.startDate).toISOString().substring(0, 10),
+    endDate: new Date(vote.endDate).toISOString().substring(0, 10),
   };
   SuccessResponse(res, { vote: { ...formatVote, options } }, 200);
 };

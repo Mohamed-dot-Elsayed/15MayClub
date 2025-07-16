@@ -82,7 +82,7 @@ export const getAllComplaints = async (req: Request, res: Response) => {
     );
   const formatData = data.map((dat) => ({
     ...dat,
-    date: new Date(dat.date).toString().substring(0, 10),
+    date: new Date(dat.date).toISOString().substring(0, 10),
   }));
 
   SuccessResponse(res, { complaints: formatData }, 200);
@@ -111,7 +111,7 @@ export const getComplaint = async (req: Request, res: Response) => {
   if (!data) throw new NotFound("Complaint not found");
   const formatData = {
     ...data,
-    date: new Date(data.date).toString().substring(0, 10),
+    date: new Date(data.date).toISOString().substring(0, 10),
   };
   SuccessResponse(res, { complaint: formatData }, 200);
 };
