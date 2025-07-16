@@ -53,30 +53,48 @@ export const getSliderById = async (req: Request, res: Response) => {
 
 export const updateSlider = async (req: Request, res: Response) => {
   const id = req.params.id;
-
   const data = req.body;
 
   await db.transaction(async (tx) => {
-    if (Object.keys(data).length > 0) {
-      await tx.update(sliders).set(data).where(eq(sliders.id, id));
+    // Update slider fields except images
+    const { images, ...rest } = data;
+    if (Object.keys(rest).length > 0) {
+      await tx.update(sliders).set(rest).where(eq(sliders.id, id));
     }
 
-    if (data.images !== undefined && Object.keys(data.images).length > 0) {
-      const sliderImagesd = await db
-        .select()
-        .from(sliderImages)
-        .where(eq(sliderImages.slider_id, id));
-      sliderImagesd.forEach(async (image) => {
-        await deletePhotoFromServer(new URL(image.id).pathname);
-      });
-      data.images.forEach(async (imagePath: any) => {
+    // Handle images logic
+    if (Array.isArray(images)) {
+      // 1. Delete given images (with id + image_path)
+      const deletions = images.filter(
+        (img: any) =>
+          img.id && img.image_path && !img.image_path.startsWith("data:")
+      );
+
+      for (const img of deletions) {
+        await deletePhotoFromServer(new URL(img.image_path).pathname);
+        await tx.delete(sliderImages).where(eq(sliderImages.id, img.id));
+      }
+
+      // 2. Add new images (base64 only)
+      const additions = images.filter(
+        (img: any) =>
+          !img.id && img.image_path && img.image_path.startsWith("data:")
+      );
+
+      for (const img of additions) {
         const imageId = uuidv4();
-        await db.insert(sliderImages).values({
+        const savedPath = await saveBase64Image(
+          img.image_path,
+          imageId,
+          req,
+          "slider"
+        );
+        await tx.insert(sliderImages).values({
           id: imageId,
           slider_id: id,
-          image_path: await saveBase64Image(imagePath, imageId, req, "slider"),
+          image_path: savedPath,
         });
-      });
+      }
     }
   });
 

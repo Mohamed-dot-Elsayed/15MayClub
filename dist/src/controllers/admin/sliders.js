@@ -52,25 +52,30 @@ const updateSlider = async (req, res) => {
     const id = req.params.id;
     const data = req.body;
     await db_1.db.transaction(async (tx) => {
-        if (Object.keys(data).length > 0) {
-            await tx.update(schema_1.sliders).set(data).where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id));
+        // Update slider fields except images
+        const { images, ...rest } = data;
+        if (Object.keys(rest).length > 0) {
+            await tx.update(schema_1.sliders).set(rest).where((0, drizzle_orm_1.eq)(schema_1.sliders.id, id));
         }
-        if (data.images !== undefined && Object.keys(data.images).length > 0) {
-            const sliderImagesd = await db_1.db
-                .select()
-                .from(schema_1.sliderImages)
-                .where((0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, id));
-            sliderImagesd.forEach(async (image) => {
-                await (0, deleteImage_1.deletePhotoFromServer)(new URL(image.id).pathname);
-            });
-            data.images.forEach(async (imagePath) => {
+        // Handle images logic
+        if (Array.isArray(images)) {
+            // 1. Delete given images (with id + image_path)
+            const deletions = images.filter((img) => img.id && img.image_path && !img.image_path.startsWith("data:"));
+            for (const img of deletions) {
+                await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.image_path).pathname);
+                await tx.delete(schema_1.sliderImages).where((0, drizzle_orm_1.eq)(schema_1.sliderImages.id, img.id));
+            }
+            // 2. Add new images (base64 only)
+            const additions = images.filter((img) => !img.id && img.image_path && img.image_path.startsWith("data:"));
+            for (const img of additions) {
                 const imageId = (0, uuid_1.v4)();
-                await db_1.db.insert(schema_1.sliderImages).values({
+                const savedPath = await (0, handleImages_1.saveBase64Image)(img.image_path, imageId, req, "slider");
+                await tx.insert(schema_1.sliderImages).values({
                     id: imageId,
                     slider_id: id,
-                    image_path: await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "slider"),
+                    image_path: savedPath,
                 });
-            });
+            }
         }
     });
     (0, response_1.SuccessResponse)(res, { message: "Slider updated successfully" }, 200);

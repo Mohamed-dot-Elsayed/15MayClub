@@ -124,34 +124,35 @@ const updatePost = async (req, res) => {
         .where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
     if (!existingPost)
         throw new Errors_1.NotFound("Post not found");
-    // Update post title and category
-    await db_1.db.update(schema_1.posts).set({ title, categoryId }).where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
-    // If new images are provided, replace old ones
-    if (images && Array.isArray(images)) {
-        // Fetch old images
-        const oldImages = await db_1.db
-            .select()
-            .from(schema_1.postsImages)
-            .where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
-        // Delete old images from server
-        await Promise.all(oldImages.map(async (img) => {
-            const deleted = await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
-            if (!deleted)
-                throw new Errors_1.ConflictError("Failed to delete post image from server");
-        }));
-        // Delete old images from DB
-        await db_1.db.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.postId, postId));
-        // Save new images
-        await Promise.all(images.map(async (imagePath) => {
-            const imageId = (0, uuid_1.v4)();
-            const savedPath = await (0, handleImages_1.saveBase64Image)(imagePath, imageId, req, "posts");
-            await db_1.db.insert(schema_1.postsImages).values({
-                id: imageId,
-                postId,
-                imagePath: savedPath,
-            });
-        }));
-    }
+    await db_1.db.transaction(async (tx) => {
+        // Update title and category
+        await tx
+            .update(schema_1.posts)
+            .set({ title, categoryId })
+            .where((0, drizzle_orm_1.eq)(schema_1.posts.id, postId));
+        if (Array.isArray(images)) {
+            // 1. Delete images that have { id, imagePath }
+            const deletions = images.filter((img) => img.id && img.imagePath && !img.imagePath.startsWith("data:"));
+            for (const img of deletions) {
+                const success = await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
+                if (!success) {
+                    throw new Errors_1.ConflictError("Failed to delete post image from server");
+                }
+                await tx.delete(schema_1.postsImages).where((0, drizzle_orm_1.eq)(schema_1.postsImages.id, img.id));
+            }
+            // 2. Add new base64 images (no id)
+            const additions = images.filter((img) => !img.id && img.imagePath && img.imagePath.startsWith("data:"));
+            for (const img of additions) {
+                const imageId = (0, uuid_1.v4)();
+                const savedPath = await (0, handleImages_1.saveBase64Image)(img.imagePath, imageId, req, "posts");
+                await tx.insert(schema_1.postsImages).values({
+                    id: imageId,
+                    postId,
+                    imagePath: savedPath,
+                });
+            }
+        }
+    });
     (0, response_1.SuccessResponse)(res, { message: "Post updated" }, 200);
 };
 exports.updatePost = updatePost;

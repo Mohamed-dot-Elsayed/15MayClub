@@ -129,52 +129,54 @@ export const updatePost = async (req: Request, res: Response) => {
     .select()
     .from(posts)
     .where(eq(posts.id, postId));
-
   if (!existingPost) throw new NotFound("Post not found");
 
-  // Update post title and category
-  await db.update(posts).set({ title, categoryId }).where(eq(posts.id, postId));
+  await db.transaction(async (tx) => {
+    // Update title and category
+    await tx
+      .update(posts)
+      .set({ title, categoryId })
+      .where(eq(posts.id, postId));
 
-  // If new images are provided, replace old ones
-  if (images && Array.isArray(images)) {
-    // Fetch old images
-    const oldImages = await db
-      .select()
-      .from(postsImages)
-      .where(eq(postsImages.postId, postId));
+    if (Array.isArray(images)) {
+      // 1. Delete images that have { id, imagePath }
+      const deletions = images.filter(
+        (img: any) =>
+          img.id && img.imagePath && !img.imagePath.startsWith("data:")
+      );
 
-    // Delete old images from server
-    await Promise.all(
-      oldImages.map(async (img) => {
-        const deleted = await deletePhotoFromServer(
+      for (const img of deletions) {
+        const success = await deletePhotoFromServer(
           new URL(img.imagePath).pathname
         );
-        if (!deleted)
+        if (!success) {
           throw new ConflictError("Failed to delete post image from server");
-      })
-    );
+        }
+        await tx.delete(postsImages).where(eq(postsImages.id, img.id));
+      }
 
-    // Delete old images from DB
-    await db.delete(postsImages).where(eq(postsImages.postId, postId));
+      // 2. Add new base64 images (no id)
+      const additions = images.filter(
+        (img: any) =>
+          !img.id && img.imagePath && img.imagePath.startsWith("data:")
+      );
 
-    // Save new images
-    await Promise.all(
-      images.map(async (imagePath: any) => {
+      for (const img of additions) {
         const imageId = uuidv4();
         const savedPath = await saveBase64Image(
-          imagePath,
+          img.imagePath,
           imageId,
           req,
           "posts"
         );
-        await db.insert(postsImages).values({
+        await tx.insert(postsImages).values({
           id: imageId,
           postId,
           imagePath: savedPath,
         });
-      })
-    );
-  }
+      }
+    }
+  });
 
   SuccessResponse(res, { message: "Post updated" }, 200);
 };

@@ -167,6 +167,7 @@ export const deleteCompetition = async (req: Request, res: Response) => {
 export const updateCompetition = async (req: Request, res: Response) => {
   const id = req.params.id;
 
+  // Check if competition exists
   const [competitionExists] = await db
     .select()
     .from(competitions)
@@ -176,10 +177,9 @@ export const updateCompetition = async (req: Request, res: Response) => {
   let { name, description, mainImagepath, startDate, endDate, images } =
     req.body;
 
-  if (mainImagepath) {
-    await deletePhotoFromServer(
-      new URL(competitionExists.mainImagepath).pathname
-    );
+  // Handle main image update (only if base64)
+  if (mainImagepath && mainImagepath.startsWith("data:")) {
+    await deletePhotoFromServer(new URL(mainImagepath).pathname);
     mainImagepath = await saveBase64Image(
       mainImagepath,
       id,
@@ -188,38 +188,41 @@ export const updateCompetition = async (req: Request, res: Response) => {
     );
   }
 
-  // Convert dates
+  // Adjust dates
   if (startDate)
     startDate = new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000);
   if (endDate)
     endDate = new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000);
 
-  // Handle images
-  if (Array.isArray(images)) {
-    const existingImages = await db
-      .select()
-      .from(competitionsImages)
-      .where(eq(competitionsImages.competitionId, id));
+  await db.transaction(async (tx) => {
+    // 1. Update text fields
+    await tx
+      .update(competitions)
+      .set({ name, description, mainImagepath, startDate, endDate })
+      .where(eq(competitions.id, id));
 
-    const incomingIds = images
-      .filter((img: any) => img.id && typeof img.id === "string")
-      .map((img: any) => img.id);
+    // 2. Handle image logic
+    if (Array.isArray(images)) {
+      // a) Delete images with id + imagePath
+      const deletions = images.filter(
+        (img: any) =>
+          img.id && img.imagePath && !img.imagePath.startsWith("data:")
+      );
 
-    // 1. Delete removed images
-    const toDelete = existingImages.filter(
-      (img) => !incomingIds.includes(img.id)
-    );
+      for (const img of deletions) {
+        await deletePhotoFromServer(new URL(img.imagePath).pathname);
+        await tx
+          .delete(competitionsImages)
+          .where(eq(competitionsImages.id, img.id));
+      }
 
-    for (const img of toDelete) {
-      await deletePhotoFromServer(new URL(img.imagePath).pathname);
-      await db
-        .delete(competitionsImages)
-        .where(eq(competitionsImages.id, img.id));
-    }
+      // b) Add new base64 images
+      const additions = images.filter(
+        (img: any) =>
+          !img.id && img.imagePath && img.imagePath.startsWith("data:")
+      );
 
-    // 2. Add new base64 images
-    for (const img of images) {
-      if (!img.id && img.imagePath.startsWith("data:")) {
+      for (const img of additions) {
         const imageId = uuid4v();
         const savedPath = await saveBase64Image(
           img.imagePath,
@@ -227,20 +230,14 @@ export const updateCompetition = async (req: Request, res: Response) => {
           req,
           "competitionsImages"
         );
-        await db.insert(competitionsImages).values({
+        await tx.insert(competitionsImages).values({
           id: imageId,
           competitionId: id,
           imagePath: savedPath,
         });
       }
     }
-  }
-
-  // Update competition
-  await db
-    .update(competitions)
-    .set({ name, description, startDate, endDate, mainImagepath })
-    .where(eq(competitions.id, id));
+  });
 
   SuccessResponse(res, { message: "Competition updated successfully" }, 200);
 };

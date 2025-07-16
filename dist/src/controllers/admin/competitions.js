@@ -147,6 +147,7 @@ const deleteCompetition = async (req, res) => {
 exports.deleteCompetition = deleteCompetition;
 const updateCompetition = async (req, res) => {
     const id = req.params.id;
+    // Check if competition exists
     const [competitionExists] = await db_1.db
         .select()
         .from(schema_1.competitions)
@@ -154,50 +155,45 @@ const updateCompetition = async (req, res) => {
     if (!competitionExists)
         throw new Errors_1.NotFound("Competition not found");
     let { name, description, mainImagepath, startDate, endDate, images } = req.body;
-    if (mainImagepath) {
-        await (0, deleteImage_1.deletePhotoFromServer)(new URL(competitionExists.mainImagepath).pathname);
+    // Handle main image update (only if base64)
+    if (mainImagepath && mainImagepath.startsWith("data:")) {
+        await (0, deleteImage_1.deletePhotoFromServer)(new URL(mainImagepath).pathname);
         mainImagepath = await (0, handleImages_1.saveBase64Image)(mainImagepath, id, req, "competitionsMain");
     }
-    // Convert dates
+    // Adjust dates
     if (startDate)
         startDate = new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000);
     if (endDate)
         endDate = new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000);
-    // Handle images
-    if (Array.isArray(images)) {
-        const existingImages = await db_1.db
-            .select()
-            .from(schema_1.competitionsImages)
-            .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.competitionId, id));
-        const incomingIds = images
-            .filter((img) => img.id && typeof img.id === "string")
-            .map((img) => img.id);
-        // 1. Delete removed images
-        const toDelete = existingImages.filter((img) => !incomingIds.includes(img.id));
-        for (const img of toDelete) {
-            await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
-            await db_1.db
-                .delete(schema_1.competitionsImages)
-                .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.id, img.id));
-        }
-        // 2. Add new base64 images
-        for (const img of images) {
-            if (!img.id && img.imagePath.startsWith("data:")) {
+    await db_1.db.transaction(async (tx) => {
+        // 1. Update text fields
+        await tx
+            .update(schema_1.competitions)
+            .set({ name, description, mainImagepath, startDate, endDate })
+            .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+        // 2. Handle image logic
+        if (Array.isArray(images)) {
+            // a) Delete images with id + imagePath
+            const deletions = images.filter((img) => img.id && img.imagePath && !img.imagePath.startsWith("data:"));
+            for (const img of deletions) {
+                await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
+                await tx
+                    .delete(schema_1.competitionsImages)
+                    .where((0, drizzle_orm_1.eq)(schema_1.competitionsImages.id, img.id));
+            }
+            // b) Add new base64 images
+            const additions = images.filter((img) => !img.id && img.imagePath && img.imagePath.startsWith("data:"));
+            for (const img of additions) {
                 const imageId = (0, uuid_1.v4)();
                 const savedPath = await (0, handleImages_1.saveBase64Image)(img.imagePath, imageId, req, "competitionsImages");
-                await db_1.db.insert(schema_1.competitionsImages).values({
+                await tx.insert(schema_1.competitionsImages).values({
                     id: imageId,
                     competitionId: id,
                     imagePath: savedPath,
                 });
             }
         }
-    }
-    // Update competition
-    await db_1.db
-        .update(schema_1.competitions)
-        .set({ name, description, startDate, endDate, mainImagepath })
-        .where((0, drizzle_orm_1.eq)(schema_1.competitions.id, id));
+    });
     (0, response_1.SuccessResponse)(res, { message: "Competition updated successfully" }, 200);
 };
 exports.updateCompetition = updateCompetition;
