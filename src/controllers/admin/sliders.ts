@@ -4,10 +4,6 @@ import { db } from "../../models/db";
 import { sliders, sliderImages } from "../../models/schema";
 import { v4 as uuidv4 } from "uuid";
 import { eq } from "drizzle-orm";
-import {
-  createSliderSchema,
-  updateSliderSchema,
-} from "../../validators/admin/sliders";
 import { saveBase64Image } from "../../utils/handleImages";
 import { SuccessResponse } from "../../utils/response";
 import { NotFound } from "../../Errors";
@@ -35,9 +31,29 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(sliders)
-    .orderBy(sliders.order)
     .leftJoin(sliderImages, eq(sliders.id, sliderImages.slider_id));
-  SuccessResponse(res, { sliders: data }, 200);
+
+  const groupedSliders = data.reduce((acc: any[], curr: any) => {
+    const slider = curr.sliders;
+    const image = curr.sliderImages?.image_path || null;
+
+    const existing = acc.find((s) => s.id === slider.id);
+
+    if (existing) {
+      if (image) existing.images.push(image);
+    } else {
+      acc.push({
+        id: slider.id,
+        name: slider.name,
+        status: slider.status,
+        images: image ? [image] : [],
+      });
+    }
+
+    return acc;
+  }, []);
+
+  SuccessResponse(res, { sliders: groupedSliders }, 200);
 };
 
 export const getSliderById = async (req: Request, res: Response) => {

@@ -31,9 +31,26 @@ const getAllSlidersForAdmin = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.sliders)
-        .orderBy(schema_1.sliders.order)
         .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliders.id, schema_1.sliderImages.slider_id));
-    (0, response_1.SuccessResponse)(res, { sliders: data }, 200);
+    const groupedSliders = data.reduce((acc, curr) => {
+        const slider = curr.sliders;
+        const image = curr.sliderImages?.image_path || null;
+        const existing = acc.find((s) => s.id === slider.id);
+        if (existing) {
+            if (image)
+                existing.images.push(image);
+        }
+        else {
+            acc.push({
+                id: slider.id,
+                name: slider.name,
+                status: slider.status,
+                images: image ? [image] : [],
+            });
+        }
+        return acc;
+    }, []);
+    (0, response_1.SuccessResponse)(res, { sliders: groupedSliders }, 200);
 };
 exports.getAllSlidersForAdmin = getAllSlidersForAdmin;
 const getSliderById = async (req, res) => {
