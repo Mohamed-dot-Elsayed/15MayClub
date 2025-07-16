@@ -83,17 +83,18 @@ const getAllPosts = async (req, res) => {
         .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
     const groupedPosts = data.reduce((acc, curr) => {
         const post = curr.posts;
-        const image = curr.posts_images.imagePath;
+        const image = curr.posts_images?.imagePath || null;
         const existing = acc.find((p) => p.id === post.id);
         if (existing) {
-            existing.images.push(image);
+            if (image)
+                existing.images.push(image);
         }
         else {
             acc.push({
                 id: post.id,
                 title: post.title,
                 categoryId: post.categoryId,
-                images: [image],
+                images: image ? [image] : [],
             });
         }
         return acc;
