@@ -121,7 +121,8 @@ export const rejectUser = async (req: Request, res: Response) => {
   await sendEmail(
     user.email,
     "Your account has been Rejected",
-    "Unfortunately, your account was rejected."
+    "Unfortunately, your account was rejected. The Reason is " +
+      user.rejectionReason
   );
   SuccessResponse(res, { message: "User rejected successfully" }, 200);
 };

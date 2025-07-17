@@ -104,7 +104,8 @@ const rejectUser = async (req, res) => {
         rejectionReason: rejectionReason,
     })
         .where((0, drizzle_orm_1.eq)(schema_1.users.id, id));
-    await (0, sendEmails_1.sendEmail)(user.email, "Your account has been Rejected", "Unfortunately, your account was rejected.");
+    await (0, sendEmails_1.sendEmail)(user.email, "Your account has been Rejected", "Unfortunately, your account was rejected. The Reason is " +
+        user.rejectionReason);
     (0, response_1.SuccessResponse)(res, { message: "User rejected successfully" }, 200);
 };
 exports.rejectUser = rejectUser;
