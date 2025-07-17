@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.rejectSchema = exports.updateUserSchema = void 0;
+exports.updateUserSchema = void 0;
 const zod_1 = require("zod");
 // export const updateUserSchema = z.object({
 //   body: signupSchema.partial().optional(),
@@ -49,10 +49,5 @@ exports.updateUserSchema = zod_1.z.object({
                 message: "Valid base64 image is required",
             });
         }
-    }),
-});
-exports.rejectSchema = zod_1.z.object({
-    body: zod_1.z.object({
-        rejectionReason: zod_1.z.string().min(10),
     }),
 });

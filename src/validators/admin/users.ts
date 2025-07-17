@@ -58,9 +58,3 @@ export const updateUserSchema = z.object({
       }
     }),
 });
-
-export const rejectSchema = z.object({
-  body: z.object({
-    rejectionReason: z.string().min(10),
-  }),
-});

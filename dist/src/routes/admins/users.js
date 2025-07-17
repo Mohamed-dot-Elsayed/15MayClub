@@ -18,7 +18,7 @@ router
     .delete((0, catchAsync_1.catchAsync)(users_1.deleteUser))
     .put((0, validation_1.validate)(users_2.updateUserSchema), (0, catchAsync_1.catchAsync)(users_1.updateUser));
 router.put("/:id/approve", (0, catchAsync_1.catchAsync)(users_1.approveUser));
-router.put("/:id/reject", (0, validation_1.validate)(users_2.rejectSchema), (0, catchAsync_1.catchAsync)(users_1.rejectUser));
+router.put("/:id/reject", (0, catchAsync_1.catchAsync)(users_1.rejectUser));
 // Rejected User
 router.get("/rejected", (0, catchAsync_1.catchAsync)(users_1.getAllRejectedUsers));
 router
