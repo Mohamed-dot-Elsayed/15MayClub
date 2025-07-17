@@ -82,7 +82,7 @@ export const updateSlider = async (req: Request, res: Response) => {
     // Handle images logic
     if (Array.isArray(images)) {
       // 1. Delete given images (with id + image_path)
-      const deletions = images.filter((img: any) => img.id && img.image_path);
+      const deletions = images.filter((img: any) => img.id && img.imagePath);
 
       for (const img of deletions) {
         await deletePhotoFromServer(new URL(img.imagePath).pathname);
