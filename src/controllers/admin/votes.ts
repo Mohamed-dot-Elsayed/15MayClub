@@ -135,7 +135,10 @@ export const deleteVote = async (req: Request, res: Response) => {
   const vote = await db.query.votes.findFirst({ where: eq(votes.id, id) });
   if (!vote) throw new NotFound("Vote not found");
   await db.transaction(async (tx) => {
-    await tx.delete(votesItems).where(eq(votesItems.voteId, id));
+    await tx
+      .update(votesItems)
+      .set({ voteId: null })
+      .where(eq(votesItems.voteId, id));
     const userVotesList = await tx
       .select({ id: userVotes.id })
       .from(userVotes)

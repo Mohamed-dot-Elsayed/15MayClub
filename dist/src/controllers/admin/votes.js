@@ -127,7 +127,10 @@ const deleteVote = async (req, res) => {
     if (!vote)
         throw new Errors_1.NotFound("Vote not found");
     await db_1.db.transaction(async (tx) => {
-        await tx.delete(schema_1.votesItems).where((0, drizzle_orm_1.eq)(schema_1.votesItems.voteId, id));
+        await tx
+            .update(schema_1.votesItems)
+            .set({ voteId: null })
+            .where((0, drizzle_orm_1.eq)(schema_1.votesItems.voteId, id));
         const userVotesList = await tx
             .select({ id: schema_1.userVotes.id })
             .from(schema_1.userVotes)
