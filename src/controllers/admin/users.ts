@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { db } from "../../models/db";
 import { users } from "../../models/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 import { SuccessResponse } from "../../utils/response";
 import { ConflictError, NotFound } from "../../Errors";
 import { saveBase64Image } from "../../utils/handleImages";
@@ -10,7 +10,7 @@ import { sendEmail } from "../../utils/sendEmails";
 import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 export const getAllUsers = async (req: Request, res: Response) => {
-  const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
+  const allUsers = await db.select().from(users).orderBy(asc(users.createdAt));
 
   const formattedUsers = allUsers.map((user) => ({
     ...user,
