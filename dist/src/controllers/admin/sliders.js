@@ -80,14 +80,14 @@ const updateSlider = async (req, res) => {
             // 1. Delete given images (with id + image_path)
             const deletions = images.filter((img) => img.id && img.image_path);
             for (const img of deletions) {
-                await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.image_path).pathname);
+                await (0, deleteImage_1.deletePhotoFromServer)(new URL(img.imagePath).pathname);
                 await tx.delete(schema_1.sliderImages).where((0, drizzle_orm_1.eq)(schema_1.sliderImages.id, img.id));
             }
             // 2. Add new images (base64 only)
-            const additions = images.filter((img) => !img.id && img.image_path && img.image_path.startsWith("data:"));
+            const additions = images.filter((img) => !img.id && img.imagePath && img.imagePath.startsWith("data:"));
             for (const img of additions) {
                 const imageId = (0, uuid_1.v4)();
-                const savedPath = await (0, handleImages_1.saveBase64Image)(img.image_path, imageId, req, "slider");
+                const savedPath = await (0, handleImages_1.saveBase64Image)(img.imagePath, imageId, req, "slider");
                 await tx.insert(schema_1.sliderImages).values({
                     id: imageId,
                     slider_id: id,

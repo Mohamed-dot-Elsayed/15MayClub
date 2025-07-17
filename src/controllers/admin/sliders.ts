@@ -85,20 +85,20 @@ export const updateSlider = async (req: Request, res: Response) => {
       const deletions = images.filter((img: any) => img.id && img.image_path);
 
       for (const img of deletions) {
-        await deletePhotoFromServer(new URL(img.image_path).pathname);
+        await deletePhotoFromServer(new URL(img.imagePath).pathname);
         await tx.delete(sliderImages).where(eq(sliderImages.id, img.id));
       }
 
       // 2. Add new images (base64 only)
       const additions = images.filter(
         (img: any) =>
-          !img.id && img.image_path && img.image_path.startsWith("data:")
+          !img.id && img.imagePath && img.imagePath.startsWith("data:")
       );
 
       for (const img of additions) {
         const imageId = uuidv4();
         const savedPath = await saveBase64Image(
-          img.image_path,
+          img.imagePath,
           imageId,
           req,
           "slider"
