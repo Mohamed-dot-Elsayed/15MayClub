@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { db } from "../../models/db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import {
   competitions,
   complaints,
@@ -54,7 +54,7 @@ export const getRejectUser = async (req: Request, res: Response) => {
     })
     .from(users)
     .where(eq(users.status, "rejected"))
-    .orderBy(users.updatedAt);
+    .orderBy(desc(users.updatedAt));
 
   const formattedUsers = userRej.map((user) => ({
     ...user,
