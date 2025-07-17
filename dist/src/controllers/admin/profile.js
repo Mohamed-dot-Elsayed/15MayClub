@@ -24,7 +24,8 @@ const updateProfile = async (req, res) => {
     const [data] = await db_1.db.select().from(schema_1.admins).where((0, drizzle_orm_1.eq)(schema_1.admins.id, userId));
     if (!data)
         throw new Errors_1.NotFound("user not found");
-    newData.hashedPassword = await bcrypt_1.default.hash(newData.password, 10);
+    if (newData.password)
+        newData.hashedPassword = await bcrypt_1.default.hash(newData.password, 10);
     await db_1.db.update(schema_1.admins).set(newData).where((0, drizzle_orm_1.eq)(schema_1.admins.id, userId));
     (0, response_1.SuccessResponse)(res, { message: "updated successfully" }, 200);
 };
