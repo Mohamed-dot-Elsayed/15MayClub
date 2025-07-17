@@ -14,7 +14,7 @@ const handleImages_1 = require("../../utils/handleImages");
 const sendEmails_1 = require("../../utils/sendEmails");
 const deleteImage_1 = require("../../utils/deleteImage");
 const getAllUsers = async (req, res) => {
-    const allUsers = await db_1.db.select().from(schema_1.users);
+    const allUsers = await db_1.db.select().from(schema_1.users).orderBy((0, drizzle_orm_1.desc)(schema_1.users.createdAt));
     const formattedUsers = allUsers.map((user) => ({
         ...user,
         dateOfBirth: user.dateOfBirth
