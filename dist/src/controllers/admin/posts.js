@@ -62,7 +62,14 @@ exports.deleteCategory = deleteCategory;
 const createPost = async (req, res) => {
     const { title, categoryId, images } = req.body;
     const postId = (0, uuid_1.v4)();
-    await db_1.db.insert(schema_1.posts).values({ id: postId, title, categoryId });
+    await db_1.db
+        .insert(schema_1.posts)
+        .values({
+        id: postId,
+        title,
+        categoryId,
+        createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
     if (images !== undefined && Object.keys(images).length > 0) {
         images.forEach(async (imagePath) => {
             const imageId = (0, uuid_1.v4)();
@@ -80,7 +87,8 @@ const getAllPosts = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.posts)
-        .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId));
+        .leftJoin(schema_1.postsImages, (0, drizzle_orm_1.eq)(schema_1.posts.id, schema_1.postsImages.postId))
+        .orderBy(schema_1.posts.createdAt);
     const groupedPosts = data.reduce((acc, curr) => {
         const post = curr.posts;
         const image = curr.posts_images?.imagePath || null;

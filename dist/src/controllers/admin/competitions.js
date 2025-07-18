@@ -10,7 +10,10 @@ const uuid_1 = require("uuid");
 const handleImages_1 = require("../../utils/handleImages");
 const deleteImage_1 = require("../../utils/deleteImage");
 const getAllCompetitions = async (req, res) => {
-    const data = await db_1.db.select().from(schema_1.competitions);
+    const data = await db_1.db
+        .select()
+        .from(schema_1.competitions)
+        .orderBy(schema_1.competitions.createdAt);
     const formatted = data.map((comp) => ({
         ...comp,
         startDate: comp.startDate
@@ -59,6 +62,7 @@ const createCompetition = async (req, res) => {
             mainImagepath: await (0, handleImages_1.saveBase64Image)(mainImagepath, id, req, "competitionsMain"),
             startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000),
             endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000),
+            createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
         });
         if (images !== undefined && Object.keys(images).length > 0) {
             images.forEach(async (imagePath) => {

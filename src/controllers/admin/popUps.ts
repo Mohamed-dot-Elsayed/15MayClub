@@ -21,9 +21,15 @@ export const createPopUp = async (req: Request, res: Response) => {
   const id = uuidv4();
   imagePath = await saveBase64Image(imagePath, id, req, "popups");
   await db.transaction(async (tx) => {
-    await tx
-      .insert(popUpsImages)
-      .values({ id, title, imagePath, startDate, endDate, status });
+    await tx.insert(popUpsImages).values({
+      id,
+      title,
+      imagePath,
+      startDate,
+      endDate,
+      status,
+      createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
     await tx.insert(popUpsPages).values(
       pageIds.map((pageId: any) => ({
         id: uuidv4(),
@@ -37,7 +43,10 @@ export const createPopUp = async (req: Request, res: Response) => {
 };
 
 export const getAllPopUps = async (_req: Request, res: Response) => {
-  const result = await db.select().from(popUpsImages);
+  const result = await db
+    .select()
+    .from(popUpsImages)
+    .orderBy(popUpsImages.createdAt);
 
   const formatted = result.map((popup) => ({
     ...popup,
@@ -143,7 +152,7 @@ export const deletePopUp = async (req: Request, res: Response) => {
 
 // App Pages
 export const getAllAppPages = async (req: Request, res: Response) => {
-  const Apppages = await db.select().from(appPages);
+  const Apppages = await db.select().from(appPages).orderBy(appPages.createdAt);
   SuccessResponse(res, { Apppages }, 200);
 };
 
@@ -157,7 +166,13 @@ export const getAppPageById = async (req: Request, res: Response) => {
 export const createAppPage = async (req: Request, res: Response) => {
   const { name } = req.body;
   const id = uuidv4();
-  await db.insert(appPages).values({ id, name });
+  await db
+    .insert(appPages)
+    .values({
+      id,
+      name,
+      createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
   SuccessResponse(res, { message: "App page created successfully" }, 201);
 };
 

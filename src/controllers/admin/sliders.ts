@@ -14,7 +14,13 @@ export const createSlider = async (req: Request, res: Response) => {
   const id = uuidv4();
   let newStatus = false;
   if (status === "active") newStatus = true;
-  await db.insert(sliders).values({ id, name, status: newStatus, order });
+  await db.insert(sliders).values({
+    id,
+    name,
+    status: newStatus,
+    order,
+    createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+  });
   images.forEach(async (imagePath: any) => {
     const imageId = uuidv4();
     await db.insert(sliderImages).values({
@@ -31,7 +37,8 @@ export const getAllSlidersForAdmin = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(sliders)
-    .leftJoin(sliderImages, eq(sliderImages.slider_id, sliders.id));
+    .leftJoin(sliderImages, eq(sliderImages.slider_id, sliders.id))
+    .orderBy(sliders.createdAt);
 
   const groupedSliders = data.reduce((acc: any[], curr: any) => {
     const slider = curr.sliders;

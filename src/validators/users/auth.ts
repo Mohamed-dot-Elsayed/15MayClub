@@ -3,7 +3,7 @@ import { z } from "zod";
 export const signupSchema = z.object({
   body: z
     .object({
-      name: z.string().min(3, "name must be at least 3 characters long"),
+      name: z.string().min(2, "name must be at least 2 characters long"),
       phoneNumber: z.string(),
       role: z.enum(["member", "guest"]),
       email: z.string().email("Invalid email"),
@@ -38,7 +38,7 @@ export const signupSchema = z.object({
 export const loginSchema = z.object({
   body: z.object({
     email: z.string().email(),
-    password: z.string().min(6),
+    password: z.string().min(8),
   }),
 });
 
@@ -66,6 +66,6 @@ export const resetPasswordSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email"),
     code: z.string().length(6, "Reset code must be 6 characters long"),
-    newPassword: z.string(),
+    newPassword: z.string().min(8),
   }),
 });

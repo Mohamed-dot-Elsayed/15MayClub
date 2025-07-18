@@ -56,6 +56,7 @@ export const votes = mysqlTable("votes", {
   maxSelections: int("max_selections").notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const votesItems = mysqlTable("votes_items", {
@@ -94,6 +95,7 @@ export const posts = mysqlTable("posts", {
   categoryId: varchar("category_id", { length: 36 })
     .notNull()
     .references(() => postsCategory.id),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const postsImages = mysqlTable("posts_images", {
@@ -124,6 +126,7 @@ export const complaintsCategory = mysqlTable("complaints_category", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const complaints = mysqlTable("complaints", {
@@ -148,6 +151,7 @@ export const competitions = mysqlTable("competitions", {
   mainImagepath: text("main_image_path").notNull(),
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const competitionsImages = mysqlTable("competitions_images", {
@@ -181,6 +185,7 @@ export const userCompetition = mysqlTable(
 export const appPages = mysqlTable("app_pages", {
   id: varchar("id", { length: 36 }).primaryKey(),
   name: varchar("name", { length: 255 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const popUpsImages = mysqlTable("popups_images", {
@@ -190,6 +195,7 @@ export const popUpsImages = mysqlTable("popups_images", {
   startDate: date("start_date").notNull(),
   endDate: date("end_date").notNull(),
   status: mysqlEnum(popUpsStatus).default("active").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const popUpsPages = mysqlTable("popups_pages", {
@@ -207,6 +213,7 @@ export const sliders = mysqlTable("sliders", {
   name: varchar("name", { length: 255 }),
   status: boolean("status").default(true),
   order: int("arrange").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const sliderImages = mysqlTable("slider_images", {

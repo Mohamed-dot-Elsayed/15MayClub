@@ -15,7 +15,13 @@ const createSlider = async (req, res) => {
     let newStatus = false;
     if (status === "active")
         newStatus = true;
-    await db_1.db.insert(schema_1.sliders).values({ id, name, status: newStatus, order });
+    await db_1.db.insert(schema_1.sliders).values({
+        id,
+        name,
+        status: newStatus,
+        order,
+        createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
     images.forEach(async (imagePath) => {
         const imageId = (0, uuid_1.v4)();
         await db_1.db.insert(schema_1.sliderImages).values({
@@ -31,7 +37,8 @@ const getAllSlidersForAdmin = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.sliders)
-        .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, schema_1.sliders.id));
+        .leftJoin(schema_1.sliderImages, (0, drizzle_orm_1.eq)(schema_1.sliderImages.slider_id, schema_1.sliders.id))
+        .orderBy(schema_1.sliders.createdAt);
     const groupedSliders = data.reduce((acc, curr) => {
         const slider = curr.sliders;
         const image = curr.slider_images?.image_path || null;

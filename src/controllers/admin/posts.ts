@@ -63,7 +63,14 @@ export const createPost = async (req: Request, res: Response) => {
   const { title, categoryId, images } = req.body;
   const postId = uuidv4();
 
-  await db.insert(posts).values({ id: postId, title, categoryId });
+  await db
+    .insert(posts)
+    .values({
+      id: postId,
+      title,
+      categoryId,
+      createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
 
   if (images !== undefined && Object.keys(images).length > 0) {
     images.forEach(async (imagePath: any) => {
@@ -83,7 +90,8 @@ export const getAllPosts = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(posts)
-    .leftJoin(postsImages, eq(posts.id, postsImages.postId));
+    .leftJoin(postsImages, eq(posts.id, postsImages.postId))
+    .orderBy(posts.createdAt);
 
   const groupedPosts = data.reduce((acc: any[], curr: any) => {
     const post = curr.posts;

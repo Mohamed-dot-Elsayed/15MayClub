@@ -14,9 +14,15 @@ const createPopUp = async (req, res) => {
     const id = (0, uuid_1.v4)();
     imagePath = await (0, handleImages_1.saveBase64Image)(imagePath, id, req, "popups");
     await db_1.db.transaction(async (tx) => {
-        await tx
-            .insert(schema_1.popUpsImages)
-            .values({ id, title, imagePath, startDate, endDate, status });
+        await tx.insert(schema_1.popUpsImages).values({
+            id,
+            title,
+            imagePath,
+            startDate,
+            endDate,
+            status,
+            createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+        });
         await tx.insert(schema_1.popUpsPages).values(pageIds.map((pageId) => ({
             id: (0, uuid_1.v4)(),
             imageId: id,
@@ -27,7 +33,10 @@ const createPopUp = async (req, res) => {
 };
 exports.createPopUp = createPopUp;
 const getAllPopUps = async (_req, res) => {
-    const result = await db_1.db.select().from(schema_1.popUpsImages);
+    const result = await db_1.db
+        .select()
+        .from(schema_1.popUpsImages)
+        .orderBy(schema_1.popUpsImages.createdAt);
     const formatted = result.map((popup) => ({
         ...popup,
         startDate: popup.startDate
@@ -118,7 +127,7 @@ const deletePopUp = async (req, res) => {
 exports.deletePopUp = deletePopUp;
 // App Pages
 const getAllAppPages = async (req, res) => {
-    const Apppages = await db_1.db.select().from(schema_1.appPages);
+    const Apppages = await db_1.db.select().from(schema_1.appPages).orderBy(schema_1.appPages.createdAt);
     (0, response_1.SuccessResponse)(res, { Apppages }, 200);
 };
 exports.getAllAppPages = getAllAppPages;
@@ -133,7 +142,13 @@ exports.getAppPageById = getAppPageById;
 const createAppPage = async (req, res) => {
     const { name } = req.body;
     const id = (0, uuid_1.v4)();
-    await db_1.db.insert(schema_1.appPages).values({ id, name });
+    await db_1.db
+        .insert(schema_1.appPages)
+        .values({
+        id,
+        name,
+        createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
     (0, response_1.SuccessResponse)(res, { message: "App page created successfully" }, 201);
 };
 exports.createAppPage = createAppPage;

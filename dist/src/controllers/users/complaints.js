@@ -23,7 +23,7 @@ const createComplaints = async (req, res) => {
         categoryId,
         content,
         seen: false,
-        date: new Date(),
+        date: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
     });
     (0, response_1.SuccessResponse)(res, { message: "Complaint created successfully" }, 201);
 };

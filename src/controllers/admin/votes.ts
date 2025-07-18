@@ -16,7 +16,8 @@ export const getAllVotes = async (req: Request, res: Response) => {
   const data = await db
     .select()
     .from(votes)
-    .leftJoin(votesItems, eq(votes.id, votesItems.voteId));
+    .leftJoin(votesItems, eq(votes.id, votesItems.voteId))
+    .orderBy(votes.createdAt);
 
   const grouped: Record<string, any> = {};
 
@@ -82,6 +83,7 @@ export const createVote = async (req: Request, res: Response) => {
       maxSelections,
       startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
       endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+      createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
     });
     if (items) {
       if (items.length) {

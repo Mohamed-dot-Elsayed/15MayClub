@@ -8,7 +8,10 @@ import { v4 as uuidv4 } from "uuid";
 
 // Complaints Category Handlers
 export const getAllComplaintsCategory = async (req: Request, res: Response) => {
-  const data = await db.select().from(complaintsCategory);
+  const data = await db
+    .select()
+    .from(complaintsCategory)
+    .orderBy(complaintsCategory.createdAt);
   SuccessResponse(res, { categories: data }, 200);
 };
 
@@ -26,7 +29,12 @@ export const createComplaintsCategory = async (req: Request, res: Response) => {
   const { name, description } = req.body;
   await db
     .insert(complaintsCategory)
-    .values({ id: uuidv4(), name: name, description: description });
+    .values({
+      id: uuidv4(),
+      name: name,
+      description: description,
+      createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
   SuccessResponse(res, { message: "Category created successfully" }, 201);
 };
 
@@ -79,7 +87,8 @@ export const getAllComplaints = async (req: Request, res: Response) => {
     .leftJoin(
       complaintsCategory,
       eq(complaints.categoryId, complaintsCategory.id)
-    );
+    )
+    .orderBy(complaints.date);
   const formatData = data.map((dat) => ({
     ...dat,
     date: new Date(dat.date).toISOString().substring(0, 10),

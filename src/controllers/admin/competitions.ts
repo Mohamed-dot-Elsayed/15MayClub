@@ -13,7 +13,10 @@ import { saveBase64Image } from "../../utils/handleImages";
 import { deletePhotoFromServer } from "../../utils/deleteImage";
 
 export const getAllCompetitions = async (req: Request, res: Response) => {
-  const data = await db.select().from(competitions);
+  const data = await db
+    .select()
+    .from(competitions)
+    .orderBy(competitions.createdAt);
 
   const formatted = data.map((comp) => ({
     ...comp,
@@ -70,6 +73,7 @@ export const createCompetition = async (req: Request, res: Response) => {
       ),
       startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000),
       endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000),
+      createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
     });
     if (images !== undefined && Object.keys(images).length > 0) {
       images.forEach(async (imagePath: any) => {

@@ -16,7 +16,6 @@ import { validate } from "../../middlewares/validation";
 import { catchAsync } from "../../utils/catchAsync";
 import {
   createFullVoteSchema,
-  flexibleVoteItemsSchema,
   updateVoteSchema,
 } from "../../validators/admin/votes";
 const router = Router();

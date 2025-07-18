@@ -44,6 +44,7 @@ exports.votes = (0, mysql_core_1.mysqlTable)("votes", {
     maxSelections: (0, mysql_core_1.int)("max_selections").notNull(),
     startDate: (0, mysql_core_1.date)("start_date").notNull(),
     endDate: (0, mysql_core_1.date)("end_date").notNull(),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.votesItems = (0, mysql_core_1.mysqlTable)("votes_items", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
@@ -77,6 +78,7 @@ exports.posts = (0, mysql_core_1.mysqlTable)("posts", {
     categoryId: (0, mysql_core_1.varchar)("category_id", { length: 36 })
         .notNull()
         .references(() => exports.postsCategory.id),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.postsImages = (0, mysql_core_1.mysqlTable)("posts_images", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
@@ -100,6 +102,7 @@ exports.complaintsCategory = (0, mysql_core_1.mysqlTable)("complaints_category",
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
     name: (0, mysql_core_1.varchar)("name", { length: 255 }).notNull(),
     description: (0, mysql_core_1.text)("description").notNull(),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.complaints = (0, mysql_core_1.mysqlTable)("complaints", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
@@ -122,6 +125,7 @@ exports.competitions = (0, mysql_core_1.mysqlTable)("competitions", {
     mainImagepath: (0, mysql_core_1.text)("main_image_path").notNull(),
     startDate: (0, mysql_core_1.date)("start_date").notNull(),
     endDate: (0, mysql_core_1.date)("end_date").notNull(),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.competitionsImages = (0, mysql_core_1.mysqlTable)("competitions_images", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
@@ -148,6 +152,7 @@ exports.userCompetition = (0, mysql_core_1.mysqlTable)("user_competition", {
 exports.appPages = (0, mysql_core_1.mysqlTable)("app_pages", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
     name: (0, mysql_core_1.varchar)("name", { length: 255 }).notNull(),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.popUpsImages = (0, mysql_core_1.mysqlTable)("popups_images", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
@@ -156,6 +161,7 @@ exports.popUpsImages = (0, mysql_core_1.mysqlTable)("popups_images", {
     startDate: (0, mysql_core_1.date)("start_date").notNull(),
     endDate: (0, mysql_core_1.date)("end_date").notNull(),
     status: (0, mysql_core_1.mysqlEnum)(exports.popUpsStatus).default("active").notNull(),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.popUpsPages = (0, mysql_core_1.mysqlTable)("popups_pages", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),
@@ -171,6 +177,7 @@ exports.sliders = (0, mysql_core_1.mysqlTable)("sliders", {
     name: (0, mysql_core_1.varchar)("name", { length: 255 }),
     status: (0, mysql_core_1.boolean)("status").default(true),
     order: (0, mysql_core_1.int)("arrange").notNull(),
+    createdAt: (0, mysql_core_1.timestamp)("created_at").defaultNow(),
 });
 exports.sliderImages = (0, mysql_core_1.mysqlTable)("slider_images", {
     id: (0, mysql_core_1.varchar)("id", { length: 36 }).primaryKey(),

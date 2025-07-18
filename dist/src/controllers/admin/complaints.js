@@ -9,7 +9,10 @@ const Errors_1 = require("../../Errors");
 const uuid_1 = require("uuid");
 // Complaints Category Handlers
 const getAllComplaintsCategory = async (req, res) => {
-    const data = await db_1.db.select().from(schema_1.complaintsCategory);
+    const data = await db_1.db
+        .select()
+        .from(schema_1.complaintsCategory)
+        .orderBy(schema_1.complaintsCategory.createdAt);
     (0, response_1.SuccessResponse)(res, { categories: data }, 200);
 };
 exports.getAllComplaintsCategory = getAllComplaintsCategory;
@@ -28,7 +31,12 @@ const createComplaintsCategory = async (req, res) => {
     const { name, description } = req.body;
     await db_1.db
         .insert(schema_1.complaintsCategory)
-        .values({ id: (0, uuid_1.v4)(), name: name, description: description });
+        .values({
+        id: (0, uuid_1.v4)(),
+        name: name,
+        description: description,
+        createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000),
+    });
     (0, response_1.SuccessResponse)(res, { message: "Category created successfully" }, 201);
 };
 exports.createComplaintsCategory = createComplaintsCategory;
@@ -82,7 +90,8 @@ const getAllComplaints = async (req, res) => {
     })
         .from(schema_1.complaints)
         .leftJoin(schema_1.users, (0, drizzle_orm_1.eq)(schema_1.complaints.userId, schema_1.users.id))
-        .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id));
+        .leftJoin(schema_1.complaintsCategory, (0, drizzle_orm_1.eq)(schema_1.complaints.categoryId, schema_1.complaintsCategory.id))
+        .orderBy(schema_1.complaints.date);
     const formatData = data.map((dat) => ({
         ...dat,
         date: new Date(dat.date).toISOString().substring(0, 10),

@@ -12,7 +12,8 @@ const getAllVotes = async (req, res) => {
     const data = await db_1.db
         .select()
         .from(schema_1.votes)
-        .leftJoin(schema_1.votesItems, (0, drizzle_orm_1.eq)(schema_1.votes.id, schema_1.votesItems.voteId));
+        .leftJoin(schema_1.votesItems, (0, drizzle_orm_1.eq)(schema_1.votes.id, schema_1.votesItems.voteId))
+        .orderBy(schema_1.votes.createdAt);
     const grouped = {};
     for (const row of data) {
         const vote = row.votes;
@@ -72,6 +73,7 @@ const createVote = async (req, res) => {
             maxSelections,
             startDate: new Date(new Date(startDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
             endDate: new Date(new Date(endDate).getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
+            createdAt: new Date(new Date().getTime() + 3 * 60 * 60 * 1000), // Adjusting for timezone
         });
         if (items) {
             if (items.length) {
